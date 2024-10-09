@@ -18,6 +18,10 @@ use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\Ajustes_motivoController;
 use App\Http\Controllers\Tipo_factController;
+use App\Http\Controllers\Forma_cobroController;
+use App\Http\Controllers\CajaController;
+use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\RubroController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\PerfilController;
@@ -121,6 +125,30 @@ Route::post("tipo_fact/create",[Tipo_factController::class,"store"]);
 Route::put("tipo_fact/update/{id}",[Tipo_factController::class,"update"]);
 Route::delete("tipo_fact/delete/{id}",[Tipo_factController::class,"destroy"]);
 Route::post("tipo_fact/search",[Tipo_factController::class, 'buscar']);
+
+Route::get("forma_cobro/read",[Forma_cobroController::class,"read"]);
+Route::post("forma_cobro/create",[Forma_cobroController::class,"store"]);
+Route::put("forma_cobro/update/{id}",[Forma_cobroController::class,"update"]);
+Route::delete("forma_cobro/delete/{id}",[Forma_cobroController::class,"destroy"]);
+Route::post("forma_cobro/search",[Forma_cobroController::class, 'buscar']);
+
+Route::get("caja/read",[CajaController::class,"read"]);
+Route::post("caja/create",[CajaController::class,"store"]);
+Route::put("caja/update/{id}",[CajaController::class,"update"]);
+Route::delete("caja/delete/{id}",[CajaController::class,"destroy"]);
+Route::post("caja/search",[CajaController::class, 'buscar']);
+
+Route::get("documento/read",[DocumentoController::class,"read"]);
+Route::post("documento/create",[DocumentoController::class,"store"]);
+Route::put("documento/update/{id}",[DocumentoController::class,"update"]);
+Route::delete("documento/delete/{id}",[DocumentoController::class,"destroy"]);
+Route::post("documento/search",[DocumentoController::class, 'buscar']);
+
+Route::get("rubro/read",[RubroController::class,"read"]);
+Route::post("rubro/create",[RubroController::class,"store"]);
+Route::put("rubro/update/{id}",[RubroController::class,"update"]);
+Route::delete("rubro/delete/{id}",[RubroController::class,"destroy"]);
+Route::post("rubro/search",[RubroController::class, 'buscar']);
 
 Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
 Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
