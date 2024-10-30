@@ -19,10 +19,7 @@ class Pedido_comp_detController extends Controller
         $datosValidados = $request->validate([
             "pedido_comp_id"=> "required",
             "producto_id"=> "required",
-            "pedido_comp_cant"=> "required",
-            "pedido_comp_precio"=> "required",
-            "stock_id"=> "required",
-            "deposito_id"=> "required"
+            "pedido_comp_cant"=> "required"
         ]);
         $pedido_comp_det = Pedido_comp_det::create($datosValidados);
         return response()->json([

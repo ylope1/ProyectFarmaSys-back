@@ -10,11 +10,8 @@ class Pedido_comp_det extends Model
     use HasFactory;
     protected $fillable = [
         'pedido_comp_id',
-        'pedido_comp_cant',
-        'pedido_comp_precio',
         'producto_id',
-        'stock_id',
-        'deposito_id'
+        'pedido_comp_cant'
     ];
     protected $primaryKey = ['pedido_comp_id','producto_id'];
     public $incrementing = false;

@@ -13,7 +13,7 @@ class Ajustes_motivoController extends Controller
 
     public function store(Request $request){
         $datosValidados = $request->validate([
-            'ajus_mot_desc'=>'required'
+            'ajus_mot_desc'=>'required|unique:ajustes_motivos,ajus_mot_desc'
         ]);
         $ajuste_motivo = Ajustes_motivo::create($datosValidados);
         $ajuste_motivo->save();
@@ -32,7 +32,7 @@ class Ajustes_motivoController extends Controller
             ],404);
         }
         $datosValidados = $request->validate([
-            'ajus_mot_desc'=>'required'
+            'ajus_mot_desc'=>'required|unique:ajustes_motivos,ajus_mot_desc,' . $ajuste_motivo->id
         ]);
         $ajuste_motivo->update($datosValidados);
         return response()->json([

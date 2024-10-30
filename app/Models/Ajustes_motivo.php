@@ -11,4 +11,9 @@ class Ajustes_motivo extends Model
     protected $fillable = [
         'ajus_mot_desc'
     ];
+    // Mutator para convertir el texto a mayúsculas antes de guardar
+    public function setAjusMotDescAttribute($value)
+    {
+        $this->attributes['ajus_mot_desc'] = strtoupper($value);
+    }
 }

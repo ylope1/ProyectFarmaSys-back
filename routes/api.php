@@ -24,6 +24,8 @@ use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
+use App\Http\Controllers\Presup_comp_cabController;
+use App\Http\Controllers\Presup_comp_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -160,6 +162,12 @@ Route::get("pedido_comp_det/read/{id}",[Pedido_comp_detController::class,"read"]
 Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
 Route::put("pedido_comp_det/update/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"update"]);
 Route::delete("pedido_comp_det/delete/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"destroy"]);
+
+Route::get("presup_comp_cab/read",[Presup_comp_cabController::class,"read"]);
+Route::post("presup_comp_cab/create",[Presup_comp_cabController::class,"store"]);
+Route::put("presup_comp_cab/update/{id}",[Presup_comp_cabController::class,"update"]);
+Route::put("presup_comp_cab/anular/{id}",[Presup_comp_cabController::class,"anular"]);
+Route::put("presup_comp_cab/confirmar/{id}",[Presup_comp_cabController::class,"confirmar"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

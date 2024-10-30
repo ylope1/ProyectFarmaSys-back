@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Empresa;
+use Illuminate\Support\Facades\DB;
 
 class EmpresaController extends Controller
 {
@@ -64,7 +65,7 @@ class EmpresaController extends Controller
             'tipo'=>'success'
         ],200);
     }
-    // Función para buscar empresas
+    /*// Función para buscar empresas
     public function buscar(Request $request){
         $query = $request->input('empresa_desc'); // Obtener el valor de 'empresa_desc' del frontend
         $empresa = Empresa::where('empresa_desc', 'LIKE', "%{$query}%")->get(); // Filtrar empresas por el nombre
@@ -77,5 +78,11 @@ class EmpresaController extends Controller
         }
 
         return response()->json($empresa, 200); // Retornar los resultados en formato JSON
+    }*/
+    // Función para buscar empresas
+    public function buscar(Request $request){
+        return DB::select("select e.id as empresa_id, e.* 
+        from empresas e
+        where e.empresa_desc ilike '%$request->empresa_desc%';");
     }
 }

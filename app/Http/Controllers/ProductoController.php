@@ -73,7 +73,7 @@ class ProductoController extends Controller
     }
      // Función para buscar productos
      public function buscar(Request $request){
-        return DB::select("select p.id as prod_id, p.* 
+        return DB::select("select p.id as producto_id, p.* 
         from productos p
         where p.prod_desc ilike '%$request->prod_desc%';");
     }
