@@ -55,13 +55,13 @@ Route::get("empresa/read",[EmpresaController::class,"read"]);
 Route::post("empresa/create",[EmpresaController::class,"store"]);
 Route::put("empresa/update/{id}",[EmpresaController::class,"update"]);
 Route::delete("empresa/delete/{id}",[EmpresaController::class,"destroy"]);
-Route::post("empresa/search", [EmpresaController::class, 'buscar']);
+Route::post("empresa/buscar", [EmpresaController::class, 'buscar']);
 
 Route::get("sucursale/read",[SucursaleController::class,"read"]);
 Route::post("sucursale/create",[SucursaleController::class,"store"]);
 Route::put("sucursale/update/{id}",[SucursaleController::class,"update"]);
 Route::delete("sucursale/delete/{id}",[SucursaleController::class,"destroy"]);
-Route::post("sucursale/search", [SucursaleController::class, 'buscar']);
+Route::post("sucursale/buscar", [SucursaleController::class, 'buscar']);
 
 Route::get("tipo_imp/read",[Tipo_impuestoController::class,"read"]);
 Route::post("tipo_imp/create",[Tipo_impuestoController::class,"store"]);
@@ -79,7 +79,7 @@ Route::get("proveedore/read",[ProveedoreController::class,"read"]);
 Route::post("proveedore/create",[ProveedoreController::class,"store"]);
 Route::put("proveedore/update/{id}",[ProveedoreController::class,"update"]);
 Route::delete("proveedore/delete/{id}",[ProveedoreController::class,"destroy"]);
-Route::post("proveedore/search", [ProveedoreController::class, 'buscar']);
+Route::post("proveedore/buscar", [ProveedoreController::class, 'buscar']);
 
 Route::get("producto/read",[ProductoController::class,"read"]);
 Route::post("producto/create",[ProductoController::class,"store"]);
@@ -157,6 +157,7 @@ Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"])
 Route::put("pedido_comp_cab/update/{id}",[Pedido_comp_cabController::class,"update"]);
 Route::put("pedido_comp_cab/anular/{id}",[Pedido_comp_cabController::class,"anular"]);
 Route::put("pedido_comp_cab/confirmar/{id}",[Pedido_comp_cabController::class,"confirmar"]);
+Route::post("pedido_comp_cab/buscar",[Pedido_comp_cabController::class,"buscar"]);
 
 Route::get("pedido_comp_det/read/{id}",[Pedido_comp_detController::class,"read"]);
 Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
@@ -168,6 +169,14 @@ Route::post("presup_comp_cab/create",[Presup_comp_cabController::class,"store"])
 Route::put("presup_comp_cab/update/{id}",[Presup_comp_cabController::class,"update"]);
 Route::put("presup_comp_cab/anular/{id}",[Presup_comp_cabController::class,"anular"]);
 Route::put("presup_comp_cab/confirmar/{id}",[Presup_comp_cabController::class,"confirmar"]);
+Route::put("presup_comp_cab/rechazar/{id}",[Presup_comp_cabController::class,"rechazar"]);
+Route::put("presup_comp_cab/aprobar/{id}",[Presup_comp_cabController::class,"aprobar"]);
+
+Route::get("presup_comp_det/read/{id}",[Presup_comp_detController::class,"read"]);
+Route::post("presup_comp_det/create",[Presup_comp_detController::class,"store"]);
+Route::put("presup_comp_det/update/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"update"]);
+Route::delete("presup_comp_det/delete/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"destroy"]);
+
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

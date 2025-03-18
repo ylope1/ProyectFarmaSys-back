@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('paises', function (Blueprint $table) {
             $table->id();
-            $table->string('pais_desc',20);
+            $table->string('pais_desc',20)->unique();
             $table->timestamps();
         });
     }

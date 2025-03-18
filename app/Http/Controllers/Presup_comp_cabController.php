@@ -10,6 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class Presup_comp_cabController extends Controller
 {
+    public function read() {
+        return DB::select("select 
+        pcc.*,
+        to_char(pcc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec,
+        to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec_aprob,
+        p.proveedor_desc,
+        e.empresa_desc,
+        s.suc_desc,
+        u.name,
+        'PEDIDO NRO:' || to_char(pcc.pedido_comp_id, '0000000') || ' FECHA PEDIDO: ' || to_char(pcc2.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || '(' || pcc2.pedido_comp_estado || ')' AS pedido 
+        from presup_comp_cab pcc
+        join proveedores p on p.id = pcc.proveedor_id
+        join empresas e on e.id = pcc.empresa_id 
+        join sucursales s on s.id = pcc.sucursal_id
+        join users u on u.id = pcc.user_id 
+        join pedidos_comp_cab pcc2 on pcc2.id = pcc.pedido_comp_id;");
+    }
     public function store(Request $request){
         $datosValidados = $request->validate([
             'user_id'=>'required',
@@ -25,7 +42,7 @@ class Presup_comp_cabController extends Controller
         $presup_comp_cab->save();
 
         $pedido_comp_cab = Pedido_comp_cab::find($request->pedido_comp_id);
-        $pedido_comp_cab->pedido_comp_estado= "PROCESADO";
+        $pedido_comp_cab->pedido_comp_estado = "PROCESADO";
         $pedido_comp_cab->save();
 
         $pedido_comp_det = DB::select("select 
@@ -39,8 +56,8 @@ class Presup_comp_cabController extends Controller
             $presup_comp_det = new Presup_comp_det();
             $presup_comp_det->presup_comp_id = $presup_comp_cab->id;
             $presup_comp_det->producto_id = $dp->producto_id;
+            $presup_comp_det->presup_comp_cant = $dp->pedido_comp_cant;
             $presup_comp_det->presup_comp_costo = $dp->prod_precio_comp;
-            $presup_comp_det->presup_comp_cant = $dp->presup_comp_cant;
             $presup_comp_det->save();
         }
 
@@ -64,7 +81,6 @@ class Presup_comp_cabController extends Controller
             'proveedor_id'=>'required',
             'sucursal_id'=>'required',
             'empresa_id'=>'required',
-            'pedido_comp_id'=>'required',
             'presup_comp_fec'=>'required',
             'presup_comp_fec_aprob'=> 'required',
             'presup_comp_estado'=>'required'
@@ -103,7 +119,6 @@ class Presup_comp_cabController extends Controller
             'proveedor_id'=>'required',
             'sucursal_id'=>'required',
             'empresa_id'=>'required',
-            'pedido_comp_id'=>'required',
             'presup_comp_fec'=>'required',
             'presup_comp_fec_aprob'=> 'required',
             'presup_comp_estado'=>'required'
@@ -133,7 +148,6 @@ class Presup_comp_cabController extends Controller
             'proveedor_id'=>'required',
             'sucursal_id'=>'required',
             'empresa_id'=>'required',
-            'pedido_comp_id'=>'required',
             'presup_comp_fec'=>'required',
             'presup_comp_fec_aprob'=> 'required',
             'presup_comp_estado'=>'required'
@@ -145,4 +159,53 @@ class Presup_comp_cabController extends Controller
             'registro'=> $presup_comp_cab
         ],200);
     }
+    public function rechazar(Request $request, $id){
+        $presup_comp_cab = Presup_comp_cab::find($id);
+        if(!$presup_comp_cab){
+            return response()->json([
+                'mensaje'=> 'Registro no encontrado',
+                'tipo'=> 'error'
+            ],404);
+        }
+        $datosValidados = $request->validate([
+            'user_id'=>'required',
+            'proveedor_id'=>'required',
+            'sucursal_id'=>'required',
+            'empresa_id'=>'required',
+            'presup_comp_fec'=>'required',
+            'presup_comp_fec_aprob'=> 'required',
+            'presup_comp_estado'=>'required'
+        ]);
+        $presup_comp_cab->update($datosValidados);
+        return response()->json([
+            'mensaje'=> 'Registro rechazado con exito',
+            'tipo'=>'success',
+            'registro'=> $presup_comp_cab
+        ],200);
+    }
+    public function aprobar(Request $request, $id){
+        $presup_comp_cab = Presup_comp_cab::find($id);
+        if(!$presup_comp_cab){
+            return response()->json([
+                'mensaje'=> 'Registro no encontrado',
+                'tipo'=> 'error'
+            ],404);
+        }
+        $datosValidados = $request->validate([
+            'user_id'=>'required',
+            'proveedor_id'=>'required',
+            'sucursal_id'=>'required',
+            'empresa_id'=>'required',
+            'presup_comp_fec'=>'required',
+            'presup_comp_fec_aprob'=> 'required',
+            'presup_comp_estado'=>'required'
+        ]);
+        $presup_comp_cab->update($datosValidados);
+        return response()->json([
+            'mensaje'=> 'Registro aprobado con exito',
+            'tipo'=>'success',
+            'registro'=> $presup_comp_cab
+        ],200);
+    }
 }
+

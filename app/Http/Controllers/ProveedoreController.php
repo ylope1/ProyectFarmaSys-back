@@ -10,9 +10,9 @@ class ProveedoreController extends Controller
 {
     public function read(){
         return DB::select("select pr.*, p.pais_desc, c.ciudad_desc 
-from proveedores pr
-join paises p on p.id = pr.pais_id 
-join ciudades c on c.id = pr.ciudad_id;");
+        from proveedores pr
+        join paises p on p.id = pr.pais_id 
+        join ciudades c on c.id = pr.ciudad_id;");
     }
 
     public function store(Request $request){
@@ -75,16 +75,11 @@ join ciudades c on c.id = pr.ciudad_id;");
         ],200);
     }
     // Función para buscar proveedores
-    public function buscar(Request $request){
-        $query = $request->input('proveedor_desc'); // Obtener el valor de 'proveedor_desc' del frontend
-        $proveedore = Proveedore::where('proveedor_desc', 'LIKE', "%{$query}%")->get(); // Filtrar proveedores por el nombre
-
-        if($proveedore->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-        return response()->json($proveedore, 200); // Retornar los resultados en formato JSON
+    public function buscar(Request $r){
+        return DB::select("select 
+        p.*,
+        p.id as proveedor_id
+        from proveedores p 
+        where proveedor_desc ilike '%{$r->proveedor_desc}%'");
     }
 }

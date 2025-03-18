@@ -80,9 +80,9 @@ class EmpresaController extends Controller
         return response()->json($empresa, 200); // Retornar los resultados en formato JSON
     }*/
     // Función para buscar empresas
-    public function buscar(Request $request){
+    public function buscar(Request $r){
         return DB::select("select e.id as empresa_id, e.* 
         from empresas e
-        where e.empresa_desc ilike '%$request->empresa_desc%';");
+        where e.empresa_desc ilike '%$r->empresa_desc%';");
     }
 }
