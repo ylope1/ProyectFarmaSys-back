@@ -10,11 +10,11 @@ class DepositoController extends Controller
 {
     public function read(){
         return DB::select("select de.*, p.pais_desc, c.ciudad_desc, e.empresa_desc, s.suc_desc
-from depositos de
-join paises p on p.id = de.pais_id 
-join ciudades c on c.id = de.ciudad_id 
-join empresas e on e.id = de.empresa_id
-join sucursales s on s.id = de.sucursal_id;");
+        from depositos de
+        join paises p on p.id = de.pais_id 
+        join ciudades c on c.id = de.ciudad_id 
+        join empresas e on e.id = de.empresa_id
+        join sucursales s on s.id = de.sucursal_id;");
     }
 
     public function store(Request $request){

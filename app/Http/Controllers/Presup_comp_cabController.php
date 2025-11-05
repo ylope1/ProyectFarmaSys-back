@@ -207,5 +207,31 @@ class Presup_comp_cabController extends Controller
             'registro'=> $presup_comp_cab
         ],200);
     }
+    public function buscar(Request $r){
+        return DB::select("SELECT 
+            pcc.id,
+            to_char(pcc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec,
+            to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec_aprob,
+            pcc.presup_comp_estado,
+            pcc.empresa_id,  
+            e.empresa_desc,
+            pcc.sucursal_id, 
+            s.suc_desc,
+            pcc.proveedor_id,
+            pr.proveedor_desc,
+            pcc.user_id, 
+            u.name AS name,
+            pcc.pedido_comp_id, 
+            pcc.id AS presup_comp_id,
+            'PRESUPUESTO NRO:' || to_char(pcc.id, '0000000') || 
+            ' FECHA PRESUP APROB: ' || to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
+            '(' || pcc.presup_comp_estado || ')' AS presupuesto
+        FROM presup_comp_cab pcc 
+        JOIN empresas e ON e.id = pcc.empresa_id
+        JOIN sucursales s ON s.id = pcc.sucursal_id
+        JOIN proveedores pr ON pr.id = pcc.proveedor_id 
+        JOIN users u ON u.id = pcc.user_id
+        WHERE pcc.presup_comp_estado = 'CONFIRMADO' and pcc.user_id = {$r->user_id};");
+    }
 }
 

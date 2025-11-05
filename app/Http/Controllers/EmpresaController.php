@@ -65,20 +65,7 @@ class EmpresaController extends Controller
             'tipo'=>'success'
         ],200);
     }
-    /*// Función para buscar empresas
-    public function buscar(Request $request){
-        $query = $request->input('empresa_desc'); // Obtener el valor de 'empresa_desc' del frontend
-        $empresa = Empresa::where('empresa_desc', 'LIKE', "%{$query}%")->get(); // Filtrar empresas por el nombre
 
-        if($empresa->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-
-        return response()->json($empresa, 200); // Retornar los resultados en formato JSON
-    }*/
     // Función para buscar empresas
     public function buscar(Request $r){
         return DB::select("select e.id as empresa_id, e.* 

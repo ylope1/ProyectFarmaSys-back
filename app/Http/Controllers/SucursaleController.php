@@ -73,19 +73,7 @@ join empresas e on e.id = s.empresa_id;");
             'tipo'=>'success'
         ],200);
     }
-     /*// Función para buscar sucursal
-     public function buscar(Request $request){
-        $query = $request->input('suc_desc'); // Obtener el valor de 'suc_desc' del frontend
-        $sucursale = Sucursale::where('suc_desc', 'LIKE', "%{$query}%")->get(); // Filtrar sucursal por la descripcion
-
-        if($sucursale->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-        return response()->json($sucursale, 200); // Retornar los resultados en formato JSON
-    }*/
+     
     public function buscar(Request $r){
         return DB::select("select s.id as sucursal_id, s.* 
         from sucursales s

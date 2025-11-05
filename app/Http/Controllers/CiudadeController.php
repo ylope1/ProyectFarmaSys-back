@@ -73,5 +73,4 @@ class CiudadeController extends Controller
 
         return response()->json($ciudade, 200); // Retornar los resultados en formato JSON
     }
-
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Paises;
-
+use Illuminate\Support\Facades\DB;
 class PaiseController extends Controller
 {
     public function read(){
@@ -58,9 +58,9 @@ class PaiseController extends Controller
     }
 
     // Función para buscar países
-    public function buscar(Request $request){
-        $query = $request->input('pais_desc'); // Obtener el valor de 'pais_desc' del frontend
-        $paise = Paises::where('pais_desc', 'LIKE', "%{$query}%")->get(); // Filtrar países por el nombre
+    Public function buscar(Request $request){
+        $query = $request->input('pais_desc'); // Obtener el valor de 'ciudad_desc' del frontend
+        $paise = Paises::where('pais_desc', 'LIKE', "%{$query}%")->get(); // Filtrar ciudades por el nombre
 
         if($paise->isEmpty()){
             return response()->json([
@@ -68,6 +68,8 @@ class PaiseController extends Controller
                 'tipo' => 'error'
             ], 404);
         }
+
         return response()->json($paise, 200); // Retornar los resultados en formato JSON
     }
+    
 }

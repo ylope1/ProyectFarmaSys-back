@@ -12,6 +12,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProveedoreController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\DepositoController;
+use App\Http\Controllers\Deposito_productoController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\CargoController;
 use App\Http\Controllers\FuncionarioController;
@@ -26,6 +27,10 @@ use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\Presup_comp_cabController;
 use App\Http\Controllers\Presup_comp_detController;
+use App\Http\Controllers\Orden_comp_cabController;
+use App\Http\Controllers\Orden_comp_detController;
+use App\Http\Controllers\Compras_cabController;
+use App\Http\Controllers\Compras_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -43,7 +48,7 @@ Route::get("paises/read",[PaiseController::class,"read"]);
 Route::post("paises/create",[PaiseController::class,"store"]);
 Route::put("paises/update/{id}",[PaiseController::class,"update"]);
 Route::delete("paises/delete/{id}",[PaiseController::class,"destroy"]);
-Route::post("paises/search", [PaiseController::class, 'buscar']);
+Route::post("paises/buscar", [PaiseController::class, 'buscar']);
 
 Route::get("ciudade/read",[CiudadeController::class,"read"]);
 Route::post("ciudade/create",[CiudadeController::class,"store"]);
@@ -92,6 +97,11 @@ Route::post("deposito/create",[DepositoController::class,"store"]);
 Route::put("deposito/update/{id}",[DepositoController::class,"update"]);
 Route::delete("deposito/delete/{id}",[DepositoController::class,"destroy"]);
 Route::post("deposito/search", [DepositoController::class, 'buscar']);
+
+Route::get("deposito_productos/read",[Deposito_productoController::class,"read"]);
+Route::post("deposito_productos/create",[Deposito_productoController::class,"store"]);
+Route::put("deposito_productos/update/{deposito_id}/{producto_id}",[Deposito_productoController::class,"update"]);
+Route::delete("deposito_productos/delete/{deposito_id}/{producto_id}",[Deposito_productoController::class,"destroy"]);
 
 Route::get("stock/read",[StockController::class,"read"]);
 Route::post("stock/create",[StockController::class,"store"]);
@@ -171,12 +181,36 @@ Route::put("presup_comp_cab/anular/{id}",[Presup_comp_cabController::class,"anul
 Route::put("presup_comp_cab/confirmar/{id}",[Presup_comp_cabController::class,"confirmar"]);
 Route::put("presup_comp_cab/rechazar/{id}",[Presup_comp_cabController::class,"rechazar"]);
 Route::put("presup_comp_cab/aprobar/{id}",[Presup_comp_cabController::class,"aprobar"]);
+Route::post("presup_comp_cab/buscar",[Presup_comp_cabController::class,"buscar"]);
 
 Route::get("presup_comp_det/read/{id}",[Presup_comp_detController::class,"read"]);
 Route::post("presup_comp_det/create",[Presup_comp_detController::class,"store"]);
 Route::put("presup_comp_det/update/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"update"]);
 Route::delete("presup_comp_det/delete/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"destroy"]);
 
+Route::get("orden_comp_cab/read",[Orden_comp_cabController::class,"read"]);
+Route::post("orden_comp_cab/create",[Orden_comp_cabController::class,"store"]);
+Route::put("orden_comp_cab/update/{id}",[Orden_comp_cabController::class,"update"]);
+Route::put("orden_comp_cab/anular/{id}",[Orden_comp_cabController::class,"anular"]);
+Route::put("orden_comp_cab/confirmar/{id}",[Orden_comp_cabController::class,"confirmar"]);
+Route::put("orden_comp_cab/rechazar/{id}",[Orden_comp_cabController::class,"rechazar"]);
+Route::put("orden_comp_cab/aprobar/{id}",[Orden_comp_cabController::class,"aprobar"]);
+
+Route::get("orden_comp_det/read/{id}",[Orden_comp_detController::class,"read"]);
+Route::post("orden_comp_det/create",[Orden_comp_detController::class,"store"]);
+Route::put("orden_comp_det/update/{orden_comp_id}/{producto_id}",[Orden_comp_detController::class,"update"]);
+Route::delete("orden_comp_det/delete/{orden_comp_id}/{producto_id}",[Orden_comp_detController::class,"destroy"]);
+
+Route::get("compras_cab/read",[Compras_cabController::class,"read"]);
+Route::post("compras_cab/create",[Compras_cabController::class,"store"]);
+Route::put("compras_cab/update/{id}",[Compras_cabController::class,"update"]);
+Route::put("compras_cab/anular/{id}",[Compras_cabController::class,"anular"]);
+Route::put("compras_cab/confirmar/{id}",[Compras_cabController::class,"confirmar"]);
+
+Route::get("compras_det/read/{id}",[Compras_detController::class,"read"]);
+Route::post("compras_det/create",[Compras_detController::class,"store"]);
+Route::put("compras_det/update/{compra_id}/{producto_id}",[Compras_detController::class,"update"]);
+Route::delete("compras_det/delete/{compra_id}/{producto_id}",[Compras_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
