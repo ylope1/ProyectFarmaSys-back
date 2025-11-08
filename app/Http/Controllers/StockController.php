@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\DB;
 class StockController extends Controller
 {
     public function read(){
-        return DB::select("select st.*, de.deposito_desc, pr.prod_desc
-from stock st
-join depositos de on de.id = st.deposito_id
-join productos pr on pr.id = st.producto_id;");
+        return DB::select("select st.*, su.suc_desc, de.deposito_desc, pr.prod_desc
+        from stock st
+        join sucursales su on su.id = st.sucursal_id
+        join depositos de on de.id = st.deposito_id
+        join productos pr on pr.id = st.producto_id;");
     }
 
     public function store(Request $request){
@@ -21,18 +22,25 @@ join productos pr on pr.id = st.producto_id;");
             'stock_cant_min'=>'required',
             'stock_cant_max'=>'required',
             'deposito_id'=>'required',
-            'producto_id'=>'required'
+            'sucursal_id'=>'required',
+            'producto_id'=>'required',
+            'cantidad_exceso'=>'nullable',
+            'fecha_movimiento'=>'nullable',
+            'motivo'=>'nullable'
         ]);
         $stock = Stock::create($datosValidados);
-        $stock->save();
+        
         return response()->json([
             'mensaje'=> 'Registro creado con exito',
             'tipo'=>'success',
             'registro'=> $stock
         ],200);
     }
-    public function update(Request $request, $id){
-        $stock = Stock::find($id);
+    public function update(Request $request, $deposito_id, $sucursal_id, $producto_id){
+        $stock = Stock::where('deposito_id', $deposito_id)
+                    ->where('sucursal_id', $sucursal_id)
+                    ->where('producto_id', $producto_id)
+                    ->first();
         if(!$stock){
             return response()->json([
                 'mensaje'=> 'Registro no encontrado',
@@ -43,8 +51,9 @@ join productos pr on pr.id = st.producto_id;");
             'stock_cant_exist'=>'required',
             'stock_cant_min'=>'required',
             'stock_cant_max'=>'required',
-            'deposito_id'=>'required',
-            'producto_id'=>'required'
+            'cantidad_exceso'=>'nullable',
+            'fecha_movimiento'=>'nullable',
+            'motivo'=>'nullable'
         ]);
         $stock->update($datosValidados);
         return response()->json([
@@ -54,8 +63,11 @@ join productos pr on pr.id = st.producto_id;");
         ],200);
 
     }
-    public function destroy ($id){
-        $stock = Stock::find($id);
+    public function destroy ($deposito_id, $sucursal_id, $producto_id){
+        $stock = Stock::where('deposito_id', $deposito_id)
+                    ->where('sucursal_id', $sucursal_id)
+                    ->where('producto_id', $producto_id)
+                    ->first();
         if(!$stock){
             return response()->json([
                 'mensaje'=> 'Registro no encontrado',

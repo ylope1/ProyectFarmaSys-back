@@ -98,15 +98,10 @@ Route::put("deposito/update/{id}",[DepositoController::class,"update"]);
 Route::delete("deposito/delete/{id}",[DepositoController::class,"destroy"]);
 Route::post("deposito/search", [DepositoController::class, 'buscar']);
 
-Route::get("deposito_productos/read",[Deposito_productoController::class,"read"]);
-Route::post("deposito_productos/create",[Deposito_productoController::class,"store"]);
-Route::put("deposito_productos/update/{deposito_id}/{producto_id}",[Deposito_productoController::class,"update"]);
-Route::delete("deposito_productos/delete/{deposito_id}/{producto_id}",[Deposito_productoController::class,"destroy"]);
-
 Route::get("stock/read",[StockController::class,"read"]);
 Route::post("stock/create",[StockController::class,"store"]);
-Route::put("stock/update/{id}",[StockController::class,"update"]);
-Route::delete("stock/delete/{id}",[StockController::class,"destroy"]);
+Route::put("stock/update/{deposito_id}/{sucursal_id}/{producto_id}",[StockController::class,"update"]);
+Route::delete("stock/delete/{deposito_id}/{sucursal_id}/{producto_id}",[StockController::class,"destroy"]);
 
 Route::get("cargo/read",[CargoController::class,"read"]);
 Route::post("cargo/create",[CargoController::class,"store"]);

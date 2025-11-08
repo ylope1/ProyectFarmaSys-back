@@ -10,10 +10,9 @@ use App\Models\Orden_comp_det;
 use App\Models\Producto;
 use App\Models\Tipo_impuesto;
 use App\Models\Stock;
-use App\Models\Deposito_producto;
+use App\Models\Deposito;
 use App\Models\Ctas_pagar;
 use App\Models\Libro_compras;
-use App\Models\Proveedor;
 use App\Models\Proveedore;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +28,7 @@ class Compras_cabController extends Controller
                 p.proveedor_desc,
                 e.empresa_desc,
                 s.suc_desc,
+                d.deposito_desc,
                 u.name as encargado,
                 tf.tipo_fact_desc,
                 COALESCE(
@@ -42,6 +42,7 @@ class Compras_cabController extends Controller
                 JOIN proveedores p ON p.id = cc.proveedor_id
                 JOIN empresas e ON e.id = cc.empresa_id
                 JOIN sucursales s ON s.id = cc.sucursal_id
+                JOIN depositos d on d.id = cc.deposito_id
                 JOIN users u ON u.id = cc.user_id
                 JOIN tipo_fact tf ON tf.id = cc.tipo_fact_id
                 LEFT JOIN orden_comp_cab oc ON oc.id = cc.orden_comp_id
@@ -61,6 +62,7 @@ class Compras_cabController extends Controller
             'user_id'               => 'required',
             'sucursal_id'           => 'required',
             'empresa_id'            => 'required',
+            'deposito_id'          => 'required',
             'tipo_fact_id'          => 'required',
             'compra_fact'           => 'required|string',
             'compra_timbrado'       => 'required|integer',
@@ -69,12 +71,12 @@ class Compras_cabController extends Controller
             'compra_cant_cta'       => 'nullable|integer',
             'compra_ifv'            => 'nullable|integer',
             'compra_estado'         => 'required|string',
-            'total_exentas'         => 'nullable|numeric',
-            'total_grav_5'          => 'nullable|numeric',
-            'total_grav_10'         => 'nullable|numeric',
-            'total_iva_5'           => 'nullable|numeric',
-            'total_iva_10'          => 'nullable|numeric',
-            'total_general'         => 'nullable|numeric',
+            'monto_exentas'         => 'nullable|numeric',
+            'monto_grav_5'          => 'nullable|numeric',
+            'monto_grav_10'         => 'nullable|numeric',
+            'monto_iva_5'           => 'nullable|numeric',
+            'monto_iva_10'          => 'nullable|numeric',
+            'monto_general'         => 'nullable|numeric',
         ]);
         // Verificamos si el tipo de factura es contado (por ejemplo, ID = 1)
         $tipoContadoId = 6;
@@ -137,6 +139,7 @@ class Compras_cabController extends Controller
             'user_id'               => 'required',
             'sucursal_id'           => 'required',
             'empresa_id'            => 'required',
+            'deposito_id'          => 'required',
             'tipo_fact_id'          => 'required',
             'compra_fact'           => 'required|string',
             'compra_timbrado'       => 'required|integer',
@@ -145,12 +148,12 @@ class Compras_cabController extends Controller
             'compra_cant_cta'       => 'nullable|integer',
             'compra_ifv'            => 'nullable|integer',
             'compra_estado'         => 'required|string',
-            'total_exentas'         => 'nullable|numeric',
-            'total_grav_5'          => 'nullable|numeric',
-            'total_grav_10'         => 'nullable|numeric',
-            'total_iva_5'           => 'nullable|numeric',
-            'total_iva_10'          => 'nullable|numeric',
-            'total_general'         => 'nullable|numeric',
+            'monto_exentas'         => 'nullable|numeric',
+            'monto_grav_5'          => 'nullable|numeric',
+            'monto_grav_10'         => 'nullable|numeric',
+            'monto_iva_5'           => 'nullable|numeric',
+            'monto_iva_10'          => 'nullable|numeric',
+            'monto_general'         => 'nullable|numeric',
         ]);
         
          $tipoContadoId = 6;
@@ -236,43 +239,45 @@ class Compras_cabController extends Controller
         $detalles = Compras_det::where('compra_id', $id)->get();
 
         // Inicializar acumuladores de totales
-        $total_grav_5 = 0;
-        $total_grav_10 = 0;
-        $total_iva_5 = 0;
-        $total_iva_10 = 0;
-        $total_exentas = 0;
+        $monto_grav_5 = 0;
+        $monto_grav_10 = 0;
+        $monto_iva_5 = 0;
+        $monto_iva_10 = 0;
+        $monto_exentas = 0;
 
         foreach ($detalles as $det) {
-        $producto = Producto::find($det->producto_id);
-        $tipo_imp = Tipo_impuesto::find($producto->impuesto_id);
+        $producto = DB::table('productos as p')
+        ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+        ->where('p.id', $det->producto_id)
+        ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
+        ->first();
 
         $subtotal = $det->compra_cant * $det->compra_costo;
 
-        if ($tipo_imp) {
-            switch ($tipo_imp->impuesto_desc) {
-                case 'IVA 5%':
+        if ($producto) {
+            switch ($producto->tipo_imp_id) {
+                case 2: // 5% IVA
                     $base5 = $subtotal / 1.05;
                     $iva5 = $subtotal - $base5;
-                    $total_grav_5 += $base5;
-                    $total_iva_5 += $iva5;
+                    $monto_grav_5 += $base5;
+                    $monto_iva_5 += $iva5;
                     break;
-
-                case 'IVA 10%':
+                case 1: // 10% IVA
                     $base10 = $subtotal / 1.10;
                     $iva10 = $subtotal - $base10;
-                    $total_grav_10 += $base10;
-                    $total_iva_10 += $iva10;
+                    $monto_grav_10 += $base10;
+                    $monto_iva_10 += $iva10;
                     break;
-
-                case 'EXENTO':
+                case 3: // Exentas
                 default:
-                    $total_exentas += $subtotal;
+                    $monto_exentas += $subtotal;
                     break;
             }
         }
 
             // Buscar stock existente
-            $stock = Stock::where('deposito_id', 1)
+            $stock = Stock::where('deposito_id', $compra->deposito_id)
+                        ->where('sucursal_id', $compra->sucursal_id)
                         ->where('producto_id', $producto->id)
                         ->first();
 
@@ -281,45 +286,48 @@ class Compras_cabController extends Controller
 
                 if ($nuevoTotal > $stock->stock_cant_max) {
                     $exceso = $nuevoTotal - $stock->stock_cant_max;
+
                     $stock->stock_cant_exist = $stock->stock_cant_max;
+                    $stock->cantidad_exceso += $exceso;
+                    $stock->fecha_movimiento =  $compra->compra_fec_recep; 
+                    $stock->motivo = 'EXCESO RECEPCIÓN COMPRA';
                     $stock->save();
 
-                    Deposito_producto::create([
-                        'deposito_id' => 1,
-                        'producto_id' => $producto->id,
-                        'cantidad' => $exceso,
-                        'fecha_movimiento' => now(),
-                        'motivo' => 'EXCESO'
-                    ]);
                 } else {
                     $stock->stock_cant_exist = $nuevoTotal;
+                    $stock->fecha_movimiento =  $compra->compra_fec_recep;
+                    $stock->motivo = 'ENTRADA COMPRA';
                     $stock->save();
                 }
             } else {
                 // Crear nuevo stock
                 Stock::create([
-                    'deposito_id' => 1,
+                    'deposito_id' => $compra->deposito_id,
+                    'sucursal_id' => $compra->sucursal_id,
                     'producto_id' => $producto->id,
                     'stock_cant_exist' => $det->compra_cant,
                     'stock_cant_min' => 0,
-                    'stock_cant_max' => 100
+                    'stock_cant_max' => 100,
+                    'cantidad_exceso' => 0,
+                    'fecha_movimiento' =>  $compra->compra_fec_recep,
+                    'motivo' => 'ENTRADA COMPRA'
                 ]);
             }
         }
 
             // Guardar totales en cabecera
-            $compra->total_grav_5 = $total_grav_5;
-            $compra->total_iva_5 = $total_iva_5;
-            $compra->total_grav_10 = $total_grav_10;
-            $compra->total_iva_10 = $total_iva_10;
-            $compra->total_exentas = $total_exentas;
-            $compra->total_general = $total_grav_5 + $total_iva_5 + $total_grav_10 + $total_iva_10 + $total_exentas;
+            $compra->monto_grav_5 = $monto_grav_5;
+            $compra->monto_iva_5 = $monto_iva_5;
+            $compra->monto_grav_10 = $monto_grav_10;
+            $compra->monto_iva_10 = $monto_iva_10;
+            $compra->monto_exentas = $monto_exentas;
+            $compra->monto_general = $monto_grav_5 + $monto_iva_5 + $monto_grav_10 + $monto_iva_10 + $monto_exentas;
             $compra->save();
 
             // Si es crédito, generar cuentas a pagar
             if ((int) $compra->tipo_fact_id === 7) { // 7 = crédito
                 $cuotas = $compra->compra_cant_cta ?? 1;
-                $montoPorCuota = $compra->total_general / $cuotas;
+                $montoPorCuota = $compra->monto_general / $cuotas;
                 $intervalo = $compra->compra_ifv ?? 30;
 
                 for ($i = 1; $i <= $cuotas; $i++) {
@@ -327,7 +335,7 @@ class Compras_cabController extends Controller
                         'id' => $i,
                         'compra_id' => $compra->id,
                         'monto' => $montoPorCuota,
-                        'saldo' => $montoPorCuota,
+                        'saldo' => $montoPorCuota, 
                         'fecha_vencimiento' => now()->addDays($intervalo * $i),
                         'nro_cuota' => $i,
                         'estado' => 'Pendiente',
@@ -338,26 +346,29 @@ class Compras_cabController extends Controller
 
             // Registrar en Libro de Compras
             $primerDetalle = $detalles->first();
-            $producto = Producto::find($primerDetalle->producto_id);
-            $tipo_imp = Tipo_impuesto::find($producto->impuesto_id);
+            $producto = DB::table('productos as p')
+                ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+                ->where('p.id', $primerDetalle->producto_id)
+                ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
+                ->first();
             $proveedor = Proveedore::find($compra->proveedor_id);
 
             Libro_Compras::create([
             'compra_id' => $compra->id,
-            'lib_comp_fecha' => now(),
-            'proveedor_ruc' => $proveedor->proveedor_ruc ?? '',
-            'lib_comp_tipo_doc' => null,
+            'lib_comp_fecha' => $compra->compra_fec,
+            'proveedor_ruc' => $proveedor->proveedor_ruc ?? '', 
+            'lib_comp_tipo_doc' => 'FACTURA',
             'lib_comp_nro_doc' => $compra->compra_fact,
-            'lib_comp_monto' => $compra->total_general,
-            'lib_comp_grav_10' => $total_grav_10,
-            'lib_comp_iva_10' => $total_iva_10,
-            'lib_comp_grav_5' => $total_grav_5,
-            'lib_comp_iva_5' => $total_iva_5,
-            'lib_comp_exentas' => $total_exentas,
+            'lib_comp_monto' => $compra->monto_general,
+            'lib_comp_grav_10' => $monto_grav_10,
+            'lib_comp_iva_10' => $monto_iva_10,
+            'lib_comp_grav_5' => $monto_grav_5,
+            'lib_comp_iva_5' => $monto_iva_5,
+            'lib_comp_exentas' => $monto_exentas,
             'proveedor_id' => $proveedor->id,
             'proveedor_desc' => $proveedor->proveedor_desc ?? '',
-            'impuesto_id' => $tipo_imp->id ?? null,
-            'impuesto_desc' => $tipo_imp->impuesto_desc ?? '',
+            'impuesto_id' => $producto->tipo_imp_id ?? null, 
+            'impuesto_desc' => $producto->tipo_imp_desc ?? '', 
         ]);
 
         return response()->json([

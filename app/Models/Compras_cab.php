@@ -12,6 +12,7 @@ class Compras_cab extends Model
         'orden_comp_id',
         'proveedor_id',
         'user_id',
+        'deposito_id',
         'sucursal_id',
         'empresa_id',
         'tipo_fact_id',
@@ -21,12 +22,12 @@ class Compras_cab extends Model
         'compra_fec_recep',
         'compra_cant_cta',
         'compra_ifv',
-        'total_exentas',
-        'total_grav_5',
-        'total_grav_10',
-        'total_iva_5',
-        'total_iva_10',
-        'total_general',
+        'monto_exentas',
+        'monto_grav_5',
+        'monto_grav_10',
+        'monto_iva_5',
+        'monto_iva_10',
+        'monto_general',
         'compra_estado'
     ];
     protected $table = 'compras_cab';
