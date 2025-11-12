@@ -12,7 +12,8 @@ class Compras_detController extends Controller
         return DB::select("
             SELECT 
             cd.*, 
-            p.prod_desc, 
+            p.prod_desc,
+            ti.id as impuesto_id, 
             ti.impuesto_desc
             FROM compras_det cd
             JOIN productos p ON p.id = cd.producto_id

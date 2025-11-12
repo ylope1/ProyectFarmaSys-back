@@ -96,7 +96,7 @@ Route::get("deposito/read",[DepositoController::class,"read"]);
 Route::post("deposito/create",[DepositoController::class,"store"]);
 Route::put("deposito/update/{id}",[DepositoController::class,"update"]);
 Route::delete("deposito/delete/{id}",[DepositoController::class,"destroy"]);
-Route::post("deposito/search", [DepositoController::class, 'buscar']);
+Route::post("deposito/buscar", [DepositoController::class, 'buscar']);
 
 Route::get("stock/read",[StockController::class,"read"]);
 Route::post("stock/create",[StockController::class,"store"]);

@@ -23,12 +23,12 @@ class Compras_cabController extends Controller
         return DB::select("
             SELECT 
                 cc.*,
-                to_char(cc.compra_fec, 'dd/mm/yyyy') as compra_fec,
-                to_char(cc.compra_fec_recep, 'dd/mm/yyyy') as compra_fec_recep,
-                p.proveedor_desc,
                 e.empresa_desc,
                 s.suc_desc,
                 d.deposito_desc,
+                to_char(cc.compra_fec, 'dd/mm/yyyy') as compra_fec,
+                to_char(cc.compra_fec_recep, 'dd/mm/yyyy') as compra_fec_recep,
+                p.proveedor_desc,
                 u.name as encargado,
                 tf.tipo_fact_desc,
                 COALESCE(
@@ -78,6 +78,10 @@ class Compras_cabController extends Controller
             'monto_iva_10'          => 'nullable|numeric',
             'monto_general'         => 'nullable|numeric',
         ]);
+                // 🔄 Corregir orden_comp_id = 0 a null
+        if ((int) $request->orden_comp_id === 0) {
+            $datosValidados['orden_comp_id'] = null;
+}
         // Verificamos si el tipo de factura es contado (por ejemplo, ID = 1)
         $tipoContadoId = 6;
 
