@@ -195,6 +195,12 @@ class Notas_comp_cabController extends Controller
 
         // Insertar en Libro de Compras si es CREDITO
         //if ($nota->nota_comp_tipo === 'NC') {
+        $primerDetalle = $detalles->first();
+        $producto = DB::table('productos as p')
+            ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+            ->where('p.id', $primerDetalle->producto_id)
+            ->select('ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
+            ->first();
         $proveedor = Proveedore::find($nota->proveedor_id);
 
             Libro_compras::create([
@@ -211,8 +217,8 @@ class Notas_comp_cabController extends Controller
                 'lib_comp_exentas' => $nota->monto_exentas,
                 'proveedor_id' => $proveedor->id,
                 'proveedor_desc' => $proveedor->proveedor_desc ?? '',
-                'impuesto_id' => null,
-                'impuesto_desc' => '',
+                'impuesto_id' => $producto->tipo_imp_id ?? null,
+                'impuesto_desc' => $producto->tipo_imp_desc ?? '',
             ]);
         //}
 
