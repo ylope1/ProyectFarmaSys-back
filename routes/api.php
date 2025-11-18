@@ -31,6 +31,8 @@ use App\Http\Controllers\Orden_comp_cabController;
 use App\Http\Controllers\Orden_comp_detController;
 use App\Http\Controllers\Compras_cabController;
 use App\Http\Controllers\Compras_detController;
+use App\Http\Controllers\Notas_comp_cabController;
+use App\Http\Controllers\Notas_comp_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -206,6 +208,13 @@ Route::get("compras_det/read/{id}",[Compras_detController::class,"read"]);
 Route::post("compras_det/create",[Compras_detController::class,"store"]);
 Route::put("compras_det/update/{compra_id}/{producto_id}",[Compras_detController::class,"update"]);
 Route::delete("compras_det/delete/{compra_id}/{producto_id}",[Compras_detController::class,"destroy"]);
+
+Route::get("notas_comp_cab/read",[Notas_comp_cabController::class,"read"]);
+Route::post("notas_comp_cab/create",[Notas_comp_cabController::class,"store"]);
+Route::put("notas_comp_cab/update/{id}",[Notas_comp_cabController::class,"update"]);
+Route::put("notas_comp_cab/anular/{id}",[Notas_comp_cabController::class,"anular"]);
+Route::put("notas_comp_cab/confirmar/{id}",[Notas_comp_cabController::class,"confirmar"]);
+
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
