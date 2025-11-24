@@ -25,10 +25,10 @@ class Notas_comp_cabController extends Controller
             d.deposito_desc,
             tf.tipo_fact_desc,
             u.name as encargado,
-            to_char(ncc.nota_comp_fec, 'dd/mm/yyyy') as nota_comp_fec,
+            to_char(ncc.nota_comp_fec, 'dd/mm/yyyy HH24:mi:ss') as nota_comp_fec,
             COALESCE(
                 'FACTURA: ' || cc.compra_fact || 
-                ' - FECHA: ' || to_char(cc.compra_fec, 'dd/mm/yyyy') ||
+                ' - FECHA: ' || to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') ||
                 ' - ESTADO: ' || cc.compra_estado
             ) AS compra
             FROM notas_comp_cab ncc
@@ -65,7 +65,7 @@ class Notas_comp_cabController extends Controller
             'nota_comp_tipo' => 'required|in:NC,ND',
             'nota_comp_fact' => 'required|string',
             'nota_comp_timbrado'=> 'required|integer',
-            'nota_comp_fec' => 'required|date',
+            'nota_comp_fec' => 'required',
             'nota_comp_estado' => 'required|in:PENDIENTE,CONFIRMADO,ANULADO',
             'monto_exentas' => 'nullable|numeric',
             'monto_grav_5' => 'nullable|numeric',
@@ -121,7 +121,7 @@ class Notas_comp_cabController extends Controller
         $datos = $request->validate([
             'nota_comp_fact' => 'required|string',
             'nota_comp_timbrado'=> 'required|integer',
-            'nota_comp_fec' => 'required|date',
+            'nota_comp_fec' => 'required',
             'monto_exentas' => 'nullable|numeric',
             'monto_grav_5' => 'nullable|numeric',
             'monto_grav_10' => 'nullable|numeric',

@@ -203,6 +203,7 @@ Route::post("compras_cab/create",[Compras_cabController::class,"store"]);
 Route::put("compras_cab/update/{id}",[Compras_cabController::class,"update"]);
 Route::put("compras_cab/anular/{id}",[Compras_cabController::class,"anular"]);
 Route::put("compras_cab/confirmar/{id}",[Compras_cabController::class,"confirmar"]);
+Route::post("compras_cab/buscar",[Compras_cabController::class,"buscar"]);
 
 Route::get("compras_det/read/{id}",[Compras_detController::class,"read"]);
 Route::post("compras_det/create",[Compras_detController::class,"store"]);
@@ -215,6 +216,10 @@ Route::put("notas_comp_cab/update/{id}",[Notas_comp_cabController::class,"update
 Route::put("notas_comp_cab/anular/{id}",[Notas_comp_cabController::class,"anular"]);
 Route::put("notas_comp_cab/confirmar/{id}",[Notas_comp_cabController::class,"confirmar"]);
 
+Route::get("notas_comp_det/read/{id}",[Notas_comp_detController::class,"read"]);
+Route::post("notas_comp_det/create",[Notas_comp_detController::class,"store"]);
+Route::put("notas_comp_det/update/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"update"]);
+Route::delete("notas_comp_det/delete/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

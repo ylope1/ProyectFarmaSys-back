@@ -66,8 +66,8 @@ class Compras_cabController extends Controller
             'tipo_fact_id'          => 'required',
             'compra_fact'           => 'required|string',
             'compra_timbrado'       => 'required|integer',
-            'compra_fec'            => 'required|date',
-            'compra_fec_recep'      => 'required|date',
+            'compra_fec'            => 'required',
+            'compra_fec_recep'      => 'required',
             'compra_cant_cta'       => 'nullable|integer',
             'compra_ifv'            => 'nullable|integer',
             'compra_estado'         => 'required|string',
@@ -147,8 +147,8 @@ class Compras_cabController extends Controller
             'tipo_fact_id'          => 'required',
             'compra_fact'           => 'required|string',
             'compra_timbrado'       => 'required|integer',
-            'compra_fec'            => 'required|date',
-            'compra_fec_recep'      => 'required|date',
+            'compra_fec'            => 'required',
+            'compra_fec_recep'      => 'required',
             'compra_cant_cta'       => 'nullable|integer',
             'compra_ifv'            => 'nullable|integer',
             'compra_estado'         => 'required|string',
@@ -381,5 +381,31 @@ class Compras_cabController extends Controller
             'registro' => $compra
         ], 200);
     }
-
+    public function buscar(Request $r){
+        return DB::select("SELECT 
+            cc.id,
+            to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') AS compra_fec,
+            cc.compra_estado,
+            cc.empresa_id,  
+            e.empresa_desc,
+            cc.sucursal_id, 
+            s.suc_desc,
+            cc.proveedor_id,
+            p.proveedor_desc,
+            cc.user_id, 
+            u.name AS encargado,
+            cc.id as compra_id,
+            'COMPRA NRO:' || to_char(cc.id, '0000000') || 
+            ' FECHA: ' || to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') || 
+            ' (' || cc.compra_estado || ')' AS compra
+        FROM compras_cab cc 
+        JOIN empresas e ON e.id = cc.empresa_id
+        JOIN sucursales s ON s.id = cc.sucursal_id 
+        JOIN proveedores p ON p.id = cc.proveedor_id
+        JOIN users u ON u.id = cc.user_id 
+        WHERE cc.compra_estado = 'CONFIRMADO' 
+        AND cc.user_id = ? 
+        AND u.name ILIKE ?
+        ", [$r->user_id, '%' . $r->name . '%']);
+    }
 }
