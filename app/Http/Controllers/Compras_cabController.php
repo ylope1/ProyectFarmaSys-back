@@ -403,7 +403,7 @@ class Compras_cabController extends Controller
         JOIN sucursales s ON s.id = cc.sucursal_id 
         JOIN proveedores p ON p.id = cc.proveedor_id
         JOIN users u ON u.id = cc.user_id 
-        WHERE cc.compra_estado = 'CONFIRMADO' 
+        WHERE cc.compra_estado = 'RECIBIDO' 
         AND cc.user_id = ? 
         AND u.name ILIKE ?
         ", [$r->user_id, '%' . $r->name . '%']);

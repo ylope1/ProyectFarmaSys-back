@@ -221,6 +221,17 @@ Route::post("notas_comp_det/create",[Notas_comp_detController::class,"store"]);
 Route::put("notas_comp_det/update/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"update"]);
 Route::delete("notas_comp_det/delete/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"destroy"]);
 
+//Route::get("remision_comp_cab/read",[Notas_comp_cabController::class,"read"]);
+//Route::post("remision_comp_cab/create",[Notas_comp_cabController::class,"store"]);
+//Route::put("remision_comp_cab/update/{id}",[Notas_comp_cabController::class,"update"]);
+//Route::put("remision_comp_cab/anular/{id}",[Notas_comp_cabController::class,"anular"]);
+//Route::put("remison_comp_cab/confirmar/{id}",[Notas_comp_cabController::class,"confirmar"]);
+
+//Route::get("remision_comp_det/read/{id}",[Notas_comp_detController::class,"read"]);
+//Route::post("remision_comp_det/create",[Notas_comp_detController::class,"store"]);
+//Route::put("remision_comp_det/update/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"update"]);
+//Route::delete("remision_comp_det/delete/{nota_comp_id}/{producto_id}",[Notas_comp_detController::class,"destroy"]);
+
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
 

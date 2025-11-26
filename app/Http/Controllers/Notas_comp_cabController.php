@@ -178,7 +178,45 @@ class Notas_comp_cabController extends Controller
 
         $detalles = Notas_comp_det::where('nota_comp_id', $id)->get();
 
+        // Inicializar acumuladores de totales
+        $monto_grav_5 = 0;
+        $monto_grav_10 = 0;
+        $monto_iva_5 = 0;
+        $monto_iva_10 = 0;
+        $monto_exentas = 0;
+
         foreach ($detalles as $det) {
+        $producto = DB::table('productos as p')
+        ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+        ->where('p.id', $det->producto_id)
+        ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
+        ->first();
+
+        $subtotal = $det->compra_cant * $det->compra_costo;
+
+        if ($producto) {
+            switch ($producto->tipo_imp_id) {
+                case 2: // 5% IVA
+                    $base5 = $subtotal / 1.05;
+                    $iva5 = $subtotal - $base5;
+                    $monto_grav_5 += $base5;
+                    $monto_iva_5 += $iva5;
+                    break;
+                case 1: // 10% IVA
+                    $base10 = $subtotal / 1.10;
+                    $iva10 = $subtotal - $base10;
+                    $monto_grav_10 += $base10;
+                    $monto_iva_10 += $iva10;
+                    break;
+                case 3: // Exentas
+                default:
+                    $monto_exentas += $subtotal;
+                    break;
+                }
+            
+            }
+
+            // Ajustar Stock
             $stock = Stock::where('deposito_id', $nota->deposito_id)
                     ->where('sucursal_id', $nota->sucursal_id)
                     ->where('producto_id', $det->producto_id)
@@ -192,16 +230,23 @@ class Notas_comp_cabController extends Controller
                 $stock->save();
             }
         }
+            // Actualizar totales en la nota
+            $nota->monto_grav_5 = $monto_grav_5;
+            $nota->monto_iva_10 = $monto_iva_10;
+            $nota->monto_iva_5 = $monto_iva_5;
+            $nota->monto_exentas = $monto_exentas;
+            $nota->monto_general = $monto_grav_10 + $monto_grav_5 + $monto_exentas + $monto_iva_10 + $monto_iva_5;
+            $nota->save(); 
 
-        // Insertar en Libro de Compras si es CREDITO
-        //if ($nota->nota_comp_tipo === 'NC') {
-        $primerDetalle = $detalles->first();
-        $producto = DB::table('productos as p')
-            ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
-            ->where('p.id', $primerDetalle->producto_id)
-            ->select('ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
-            ->first();
-        $proveedor = Proveedore::find($nota->proveedor_id);
+            // Insertar en Libro de Compras si es CREDITO
+            //if ($nota->nota_comp_tipo === 'NC') {
+            $primerDetalle = $detalles->first();
+            $producto = DB::table('productos as p')
+                ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+                ->where('p.id', $primerDetalle->producto_id)
+                ->select('ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
+                ->first();
+            $proveedor = Proveedore::find($nota->proveedor_id);
 
             Libro_compras::create([
                 'compra_id' => $nota->compra_id,
@@ -244,7 +289,8 @@ class Notas_comp_cabController extends Controller
 
         return response()->json([
             'mensaje' => 'Nota confirmada y aplicada correctamente.', 
-            'tipo' => 'success'
+            'tipo' => 'success',
+            'registro' => $nota  
         ],200);
     }
 }
