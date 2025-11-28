@@ -23,6 +23,8 @@ use App\Http\Controllers\Forma_cobroController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\RubroController;
+use App\Http\Controllers\Remision_MotivoController;
+use App\Http\Controllers\VehiculosController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\Presup_comp_cabController;
@@ -158,6 +160,18 @@ Route::post("rubro/create",[RubroController::class,"store"]);
 Route::put("rubro/update/{id}",[RubroController::class,"update"]);
 Route::delete("rubro/delete/{id}",[RubroController::class,"destroy"]);
 Route::post("rubro/search",[RubroController::class, 'buscar']);
+
+Route::get("remision_motivo/read",[Remision_MotivoController::class,"read"]);
+Route::post("remision_motivo/create",[Remision_motivoController::class,"store"]);
+Route::put("remision_motivo/update/{id}",[Remision_motivoController::class,"update"]);
+Route::delete("remision_motivo/delete/{id}",[Remision_motivoController::class,"destroy"]);
+Route::post("remision_motivo/buscar",[Remision_motivoController::class, 'buscar']);
+
+Route::get("vehiculos/read",[VehiculosController::class,"read"]);
+Route::post("vehiculos/create",[VehiculosController::class,"store"]);
+Route::put("vehiculos/update/{id}",[VehiculosController::class,"update"]);
+Route::delete("vehiculos/delete/{id}",[VehiculosController::class,"destroy"]);
+Route::post("vehiculos/buscar",[VehiculosController::class, 'buscar']);
 
 Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
 Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
