@@ -153,4 +153,20 @@ class FuncionarioController extends Controller
         }
         return response()->json($funcionario, 200); // Retornar los resultados en formato JSON
     }
+    public function buscarChofer(Request $r){
+        
+        $chofer = $r->chofer;
+        
+        return DB::select("
+        SELECT 
+            p.id,
+            p.pers_nombre || ' ' || p.pers_apellido AS chofer
+            FROM personas p 
+            JOIN funcionarios f ON f.persona_id = p.id 
+            JOIN cargos c ON c.id = f.cargo_id
+            WHERE c.id = 3 
+            AND (p.pers_nombre || ' ' || p.pers_apellido) ILIKE ?
+        ", ['%' . $chofer . '%']);
+    }
+    
 }
