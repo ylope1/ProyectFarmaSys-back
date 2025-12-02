@@ -15,7 +15,7 @@ class Ajustes_det extends Model
         'ajuste_costo',
         'item_id'
     ];
-    protected $primaryKey = ['ajuste_cab_id','producto_id'];
+    protected $primaryKey = ['ajuste_id','producto_id'];
     public $incrementing = false;
     protected $table = 'ajustes_det';
 }

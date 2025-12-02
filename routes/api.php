@@ -37,6 +37,8 @@ use App\Http\Controllers\Notas_comp_cabController;
 use App\Http\Controllers\Notas_comp_detController;
 use App\Http\Controllers\Remision_comp_cabController;
 use App\Http\Controllers\Remision_comp_detController;
+use App\Http\Controllers\Ajustes_cabController;
+use App\Http\Controllers\Ajustes_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -248,6 +250,17 @@ Route::get("remision_comp_det/read/{id}",[Remision_comp_detController::class,"re
 Route::post("remision_comp_det/create",[Remision_comp_detController::class,"store"]);
 Route::put("remision_comp_det/update/{remision_comp_id}/{producto_id}",[Remision_comp_detController::class,"update"]);
 Route::delete("remision_comp_det/delete/{remision_comp_id}/{producto_id}",[Remision_comp_detController::class,"destroy"]);
+
+Route::get("ajustes_cab/read",[Ajustes_cabController::class,"read"]);
+Route::post("ajustes_cab/create",[Ajustes_cabController::class,"store"]);
+Route::put("ajustes_cab/update/{id}",[Ajustes_cabController::class,"update"]);
+Route::put("ajustes_cab/anular/{id}",[Ajustes_cabController::class,"anular"]);
+Route::put("ajustes_cab/confirmar/{id}",[Ajustes_cabController::class,"confirmar"]);
+
+Route::get("ajustes_det/read/{id}",[Ajustes_detController::class,"read"]);
+Route::post("ajustes_det/create",[Ajustes_detController::class,"store"]);
+Route::put("ajustes_det/update/{ajuste_id}/{producto_id}",[Ajustes_detController::class,"update"]);
+Route::delete("ajustes_det/delete/{ajuste_id}/{producto_id}",[Ajustes_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
