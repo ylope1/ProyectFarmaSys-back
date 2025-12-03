@@ -3,25 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate
+use Illuminate\Support\Facades\DB;
+use App\Models\Ajustes_cab;
 use App\Models\Ajustes_det;
 
 class Ajustes_detController extends Controller
 {
-    public function read($ajuste_id)
+    public function read($id)
     {
         return DB::select("
-        SELECT 
+            SELECT 
             ad.*, 
             p.prod_desc,
             ti.id as impuesto_id, 
-            ti.impuesto_desc
+            ti.impuesto_desc,
             i.item_desc
-        FROM ajustes_det ad
-        JOIN productos p ON p.id = ad.producto_id
-        JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
-        JOIN items i ON i.id = ad.item_id
-        WHERE ad.ajuste_id = ?", [$ajuste_id]);
+            FROM ajustes_det ad
+            JOIN productos p ON p.id = ad.producto_id
+            JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
+            JOIN items i ON i.id = ad.item_id
+            WHERE ad.ajuste_id = = $id;"
+        );
     }
     public function store(Request $request)
     {

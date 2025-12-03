@@ -18,7 +18,8 @@ class Compras_detController extends Controller
             FROM compras_det cd
             JOIN productos p ON p.id = cd.producto_id
             JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
-            WHERE cd.compra_id = $id;");
+            WHERE cd.compra_id = $id;"
+        );
     }
 
     public function store(Request $request){

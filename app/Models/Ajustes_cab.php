@@ -16,6 +16,10 @@ class Ajustes_cab extends Model
         'tipo_ajuste',
         'ajustes_motivos_id',
         'ajuste_fec',
+        'monto_exentas',
+        'monto_iva_5',
+        'monto_iva_10',
+        'monto_general',
         'ajuste_estado'
     ];
     protected $table = 'ajustes_cab';
