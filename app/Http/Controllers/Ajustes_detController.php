@@ -22,7 +22,7 @@ class Ajustes_detController extends Controller
             JOIN productos p ON p.id = ad.producto_id
             JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
             JOIN items i ON i.id = ad.item_id
-            WHERE ad.ajuste_id = = $id;"
+            WHERE ad.ajuste_id = $id;"
         );
     }
     public function store(Request $request)
