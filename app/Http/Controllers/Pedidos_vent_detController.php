@@ -24,7 +24,6 @@ class Pedidos_vent_detController extends Controller
         ]);
 
         $pedido_det = Pedidos_vent_det::create($datosValidados);
-
         return response()->json([
             'mensaje'  => 'Registro creado con éxito',
             'tipo'     => 'success',

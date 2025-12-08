@@ -14,7 +14,7 @@ class Pedido_comp_cab extends Model
         'pedido_comp_estado',
         'empresa_id',
         'sucursal_id',
-        'funcionario_id'
+        'user_id'
     ];
     protected $table = 'pedidos_comp_cab';
 }

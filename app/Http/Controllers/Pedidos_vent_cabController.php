@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Pedidos_vent_cab;
 
 class Pedidos_vent_cabController extends Controller
 {
@@ -22,9 +24,9 @@ class Pedidos_vent_cabController extends Controller
                 pvc.user_id,
                 u.name AS vendedor,
                 pvc.cliente_id,
-                per.pers_nombre,
-                per.pers_apellido,
-                per.pers_ci
+                per.pers_nombre||' '||per.pers_apellido as nombre_cliente,
+                per.pers_ci as cliente_ci,
+                c.cli_ruc
             FROM pedidos_vent_cab pvc
             JOIN empresas e ON pvc.empresa_id = e.id
             JOIN sucursales s ON pvc.sucursal_id = s.id
@@ -78,6 +80,14 @@ class Pedidos_vent_cabController extends Controller
             'pedido_vent_fec_conf' => 'nullable',
             'pedido_vent_fec_env'  => 'nullable',
         ]);
+
+        // Convertir strings vacíos a null (evita error en PostgreSQL)
+        if ($request->input('pedido_vent_fec_conf') === '') {
+            $datosValidados['pedido_vent_fec_conf'] = null;
+        }
+        if ($request->input('pedido_vent_fec_env') === '') {
+            $datosValidados['pedido_vent_fec_env'] = null;
+        }
 
         $pedido->update($datosValidados);
 
@@ -160,8 +170,12 @@ class Pedidos_vent_cabController extends Controller
             'sucursal_id'           => 'required',
             'user_id'               => 'required',
             'cliente_id'            => 'required',
-            'pedido_vent_estado'    => 'required|in:CONFIRMADO_CLIENTE' // solo permitimos este estado aquí
+            'pedido_vent_estado'    => 'required|in:CONFIRMADO' // solo permitimos este estado aquí
         ]);
+        // Convertir strings vacíos a null (evita error en PostgreSQL)
+        if ($request->input('pedido_vent_fec_env') === '') {
+            $datosValidados['pedido_vent_fec_env'] = null;
+        }
 
         $pedido->update($datosValidados);
 

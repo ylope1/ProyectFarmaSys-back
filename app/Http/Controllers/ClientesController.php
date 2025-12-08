@@ -127,24 +127,25 @@ class ClientesController extends Controller
             ],200);
         });    
     }
-    // Función para buscar clientes
+    // Función para buscar clientes con mi estilo de programación
     public function buscar(Request $request){
-        $query = $request->input('query'); // el frontend puede enviar "query" con nombre o apellido
-        $clientes = Clientes::with('persona')
-            ->whereHas('persona', function ($q) use ($query) {
-                $q->where('pers_nombre', 'LIKE', '%' . $query . '%')
-                  ->orWhere('pers_apellido', 'LIKE', '%' . $query . '%')
-                  ->orWhere('pers_ci', 'ILIKE', "%{$query}%"); // búsqueda por CI
-            })
-            ->get();
-
-        if($clientes->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-        return response()->json($clientes, 200); // Retornar los resultados en formato JSON
+        return DB::select(" 
+            select 
+                c.id as cliente_id,
+                p.pers_nombre||' '||p.pers_apellido as nombre_cliente, 
+                p.pers_ci as cliente_ci, 
+                c.cli_ruc
+            from clientes c 
+            join personas p on p.id = c.persona_id 
+            where 
+                (
+                    p.pers_ci = ? 
+                    OR c.cli_ruc ilike ?
+                )
+            and c.cli_estado = 'Activo'
+            ", [
+            $request->cliente_ci,
+            '%' . $request->cliente_ci . '%'
+        ]);
     }
-    
 }

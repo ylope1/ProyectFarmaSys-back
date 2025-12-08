@@ -312,4 +312,27 @@ class Orden_comp_cabController extends Controller
             'registro'=> $orden_comp_cab
         ],200);
     }
+
+    public function buscar(Request $r){
+        return DB::select("SELECT 
+            occ.id,
+            to_char(occ.orden_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS orden_comp_fec,
+            to_char(occ.orden_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS orden_comp_fec_aprob,
+            occ.orden_comp_estado,
+            occ.empresa_id,  
+            e.empresa_desc,
+            occ.sucursal_id, 
+            s.suc_desc,
+            occ.user_id,
+            u.name as encargado,
+            occ.id as orden_comp_id,
+            'ORDEN NRO:' || to_char(occ.id, '0000000') || 
+            ' FECHA ORDEN APROB: ' || to_char(occ.orden_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
+            '(' || occ.orden_comp_estado || ')' AS orden
+        FROM orden_comp_cab occ 
+        JOIN empresas e ON e.id = occ.empresa_id
+        JOIN sucursales s ON s.id = occ.sucursal_id 
+        JOIN users u ON u.id = occ.user_id 
+        WHERE orden_comp_estado = 'APROBADO' and occ.user_id = {$r->user_id} and u.name ilike '%{$r->name}%';");
+    }
 }

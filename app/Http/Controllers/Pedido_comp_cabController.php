@@ -18,13 +18,12 @@ class Pedido_comp_cabController extends Controller
             e.empresa_desc,
             pcc.sucursal_id, 
             s.suc_desc,
-            pcc.funcionario_id, 
-            u.name AS func_nombre
+            pcc.user_id,
+            u.name as encargado
         FROM pedidos_comp_cab pcc 
         JOIN empresas e ON e.id = pcc.empresa_id
         JOIN sucursales s ON s.id = pcc.sucursal_id 
-        JOIN funcionarios f ON f.id = pcc.funcionario_id
-        JOIN users u ON f.user_id = u.id;");
+        JOIN users u ON u.id = pcc.user_id;");
     }
 
     public function store(Request $request){
@@ -34,7 +33,7 @@ class Pedido_comp_cabController extends Controller
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
             'sucursal_id'=>'required',
-            'funcionario_id'=>'required'
+            'user_id'=>'required'
         ]);
 
         $pedido_comp_cab = Pedido_comp_cab::create($datosValidados);
@@ -62,7 +61,7 @@ class Pedido_comp_cabController extends Controller
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
             'sucursal_id'=>'required',
-            'funcionario_id'=>'required'
+            'user_id'=>'required'
         ]);
 
         $pedido_comp_cab->update($datosValidados);
@@ -101,7 +100,7 @@ class Pedido_comp_cabController extends Controller
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
             'sucursal_id'=>'required',
-            'funcionario_id'=>'required'
+            'user_id'=>'required'
         ]);
 
         $pedido_comp_cab->update($datosValidados);
@@ -125,7 +124,7 @@ class Pedido_comp_cabController extends Controller
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
             'sucursal_id'=>'required',
-            'funcionario_id'=>'required'
+            'user_id'=>'required'
         ]);
         $pedido_comp_cab->update($datosValidados);
         return response()->json([
@@ -145,8 +144,7 @@ class Pedido_comp_cabController extends Controller
             e.empresa_desc,
             pcc.sucursal_id, 
             s.suc_desc,
-            pcc.funcionario_id, 
-            u.name AS func_nombre,
+            u.name as encargado,
             pcc.id as pedido_comp_id,
             'PEDIDO NRO:' || to_char(pcc.id, '0000000') || 
             ' FECHA PEDIDO APROB: ' || to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
@@ -154,8 +152,7 @@ class Pedido_comp_cabController extends Controller
         FROM pedidos_comp_cab pcc 
         JOIN empresas e ON e.id = pcc.empresa_id
         JOIN sucursales s ON s.id = pcc.sucursal_id 
-        JOIN funcionarios f ON f.id = pcc.funcionario_id
-        JOIN users u ON f.user_id = u.id 
-        WHERE pedido_comp_estado = 'CONFIRMADO' and pcc.funcionario_id = {$r->user_id} and u.name ilike '%{$r->name}%';");
+        JOIN users u ON u.id = pcc.user_id 
+        WHERE pedido_comp_estado = 'CONFIRMADO' and pcc.user_id = {$r->user_id} and u.name ilike '%{$r->name}%';");
     }
 }

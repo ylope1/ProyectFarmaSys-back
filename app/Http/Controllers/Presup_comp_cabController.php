@@ -231,7 +231,7 @@ class Presup_comp_cabController extends Controller
         JOIN sucursales s ON s.id = pcc.sucursal_id
         JOIN proveedores pr ON pr.id = pcc.proveedor_id 
         JOIN users u ON u.id = pcc.user_id
-        WHERE pcc.presup_comp_estado = 'CONFIRMADO' and pcc.user_id = {$r->user_id};");
+        WHERE pcc.presup_comp_estado = 'APROBADO' and pcc.user_id = {$r->user_id};");
     }
 }
 

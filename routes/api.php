@@ -40,6 +40,10 @@ use App\Http\Controllers\Remision_comp_cabController;
 use App\Http\Controllers\Remision_comp_detController;
 use App\Http\Controllers\Ajustes_cabController;
 use App\Http\Controllers\Ajustes_detController;
+use App\Http\Controllers\Pedidos_vent_cabController;
+use App\Http\Controllers\Pedidos_vent_detController;
+use App\Http\Controllers\Ventas_cabController;
+use App\Http\Controllers\Ventas_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -218,6 +222,7 @@ Route::put("orden_comp_cab/anular/{id}",[Orden_comp_cabController::class,"anular
 Route::put("orden_comp_cab/confirmar/{id}",[Orden_comp_cabController::class,"confirmar"]);
 Route::put("orden_comp_cab/rechazar/{id}",[Orden_comp_cabController::class,"rechazar"]);
 Route::put("orden_comp_cab/aprobar/{id}",[Orden_comp_cabController::class,"aprobar"]);
+Route::post("orden_comp_cab/buscar",[Orden_comp_cabController::class,"buscar"]);
 
 Route::get("orden_comp_det/read/{id}",[Orden_comp_detController::class,"read"]);
 Route::post("orden_comp_det/create",[Orden_comp_detController::class,"store"]);
@@ -269,17 +274,29 @@ Route::post("ajustes_det/create",[Ajustes_detController::class,"store"]);
 Route::put("ajustes_det/update/{ajuste_id}/{producto_id}",[Ajustes_detController::class,"update"]);
 Route::delete("ajustes_det/delete/{ajuste_id}/{producto_id}",[Ajustes_detController::class,"destroy"]);
 
-//Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
-//Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
-//Route::put("pedido_comp_cab/update/{id}",[Pedido_comp_cabController::class,"update"]);
-//Route::put("pedido_comp_cab/anular/{id}",[Pedido_comp_cabController::class,"anular"]);
-//Route::put("pedido_comp_cab/confirmar/{id}",[Pedido_comp_cabController::class,"confirmar"]);
-//Route::post("pedido_comp_cab/buscar",[Pedido_comp_cabController::class,"buscar"]);
+Route::get("pedidos_vent_cab/read",[Pedidos_vent_cabController::class,"read"]);
+Route::post("pedidos_vent_cab/create",[Pedidos_vent_cabController::class,"store"]);
+Route::put("pedidos_vent_cab/update/{id}",[Pedidos_vent_cabController::class,"update"]);
+Route::put("pedidos_vent_cab/anular/{id}",[Pedidos_vent_cabController::class,"anular"]);
+Route::put("pedidos_vent_cab/confirmar/{id}",[Pedidos_vent_cabController::class,"confirmar"]);
+//Route::post("pedidos_vent_cab/buscar",[Pedidos_vent_cabController::class,"buscar"]);
 
-//Route::get("pedido_comp_det/read/{id}",[Pedido_comp_detController::class,"read"]);
-//Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
-//Route::put("pedido_comp_det/update/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"update"]);
-//Route::delete("pedido_comp_det/delete/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"destroy"]);
+Route::get("pedidos_vent_det/read/{id}",[Pedidos_vent_detController::class,"read"]);
+Route::post("pedidos_vent_det/create",[Pedidos_vent_detController::class,"store"]);
+Route::put("pedidos_vent_det/update/{pedido_comp_id}/{producto_id}",[Pedidos_vent_detController::class,"update"]);
+Route::delete("pedidos_vent_det/delete/{pedido_comp_id}/{producto_id}",[Pedidos_vent_detController::class,"destroy"]);
+
+//Route::get("ventas_cab/read",[Ventas_cabController::class,"read"]);
+//Route::post("ventas_cab/create",[Ventas_cabController::class,"store"]);
+//Route::put("ventas_cab/update/{id}",[Ventas_cabController::class,"update"]);
+//Route::put("ventas_cab/anular/{id}",[Ventas_cabController::class,"anular"]);
+//Route::put("ventas_cab/confirmar/{id}",[Ventas_cabController::class,"confirmar"]);
+//Route::post("ventas_cab/buscar",[Ventas_cabController::class,"buscar"]);
+
+//Route::get("ventas_det/read/{id}",[Ventas_detController::class,"read"]);
+//Route::post("ventas_det/create",[Ventas_detController::class,"store"]);
+//Route::put("ventas_det/update/{compra_id}/{producto_id}",[Ventas_detController::class,"update"]);
+//Route::delete("ventas_det/delete/{compra_id}/{producto_id}",[Ventas_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
