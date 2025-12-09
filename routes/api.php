@@ -44,6 +44,8 @@ use App\Http\Controllers\Pedidos_vent_cabController;
 use App\Http\Controllers\Pedidos_vent_detController;
 use App\Http\Controllers\Ventas_cabController;
 use App\Http\Controllers\Ventas_detController;
+use App\Http\Controllers\Notas_venta_cabController;
+use App\Http\Controllers\Notas_venta_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -295,8 +297,20 @@ Route::post("ventas_cab/buscar",[Ventas_cabController::class,"buscar"]);
 
 Route::get("ventas_det/read/{id}",[Ventas_detController::class,"read"]);
 Route::post("ventas_det/create",[Ventas_detController::class,"store"]);
-Route::put("ventas_det/update/{compra_id}/{producto_id}",[Ventas_detController::class,"update"]);
-Route::delete("ventas_det/delete/{compra_id}/{producto_id}",[Ventas_detController::class,"destroy"]);
+Route::put("ventas_det/update/{venta_id}/{producto_id}",[Ventas_detController::class,"update"]);
+Route::delete("ventas_det/delete/{venta_id}/{producto_id}",[Ventas_detController::class,"destroy"]);
+
+Route::get("notas_venta_cab/read",[Notas_venta_cabController::class,"read"]);
+Route::post("notas_venta_cab/create",[Notas_venta_cabController::class,"store"]);
+Route::put("notas_venta_cab/update/{id}",[Notas_venta_cabController::class,"update"]);
+Route::put("notas_venta_cab/anular/{id}",[Notas_venta_cabController::class,"anular"]);
+Route::put("notas_venta_cab/confirmar/{id}",[Notas_venta_cabController::class,"confirmar"]);
+Route::post("notas_venta_cab/buscar",[Notas_venta_cabController::class,"buscar"]);
+
+Route::get("notas_venta_det/read/{id}",[Notas_venta_detController::class,"read"]);
+Route::post("notas_venta_det/create",[Notas_venta_detController::class,"store"]);
+Route::put("notas_venta_det/update/{nota_venta_id}/{producto_id}",[Notas_venta_detController::class,"update"]);
+Route::delete("notas_venta_det/delete/{nota_venta_id}/{producto_id}",[Notas_venta_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

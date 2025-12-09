@@ -382,4 +382,29 @@ class Ventas_cabController extends Controller
             'registro' => $venta
         ], 200);
     }
+
+    public function buscar(Request $r){
+        return DB::select("SELECT 
+            vc.id,
+            to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') AS venta_fec,
+            vc.venta_estado,
+            vc.empresa_id,  
+            e.empresa_desc,
+            vc.sucursal_id, 
+            s.suc_desc,
+            vc.user_id, 
+            u.name AS vendedor,
+            vc.id as venta_id,
+            'VENTA NRO:' || to_char(vc.id, '0000000') || 
+            ' FECHA: ' || to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') || 
+            ' (' || vc.venta_estado || ')' AS venta
+        FROM ventas_cab vc 
+        JOIN empresas e ON e.id = vc.empresa_id
+        JOIN sucursales s ON s.id = vc.sucursal_id 
+        JOIN users u ON u.id = vc.user_id 
+        WHERE vc.venta_estado = 'CONFIRMADO' 
+        AND cc.user_id = ? 
+        AND u.name ILIKE ?
+        ", [$r->user_id, '%' . $r->name . '%']);
+    }
 }
