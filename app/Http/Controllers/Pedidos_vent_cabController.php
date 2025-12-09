@@ -186,4 +186,25 @@ class Pedidos_vent_cabController extends Controller
         ], 200);
     }
     
+    public function buscar(Request $r){
+        return DB::select("SELECT 
+            pvc.id,
+            to_char(pvc.pedido_vent_fec, 'dd/mm/yyyy HH24:mi:ss') AS pedido_vent_fec,
+            to_char(pvc.pedido_vent_fec_conf, 'dd/mm/yyyy HH24:mi:ss') AS pedido_vent_fec_conf,
+            pvc.pedido_vent_estado,
+            pvc.empresa_id,  
+            e.empresa_desc,
+            pvc.sucursal_id, 
+            s.suc_desc,
+            u.name as vendedor,
+            pvc.id as pedido_vent_id,
+            'PEDIDO NRO:' || to_char(pvc.id, '0000000') || 
+            ' FECHA PEDIDO CONF: ' || to_char(pvc.pedido_vent_fec_conf, 'dd/mm/yyyy HH24:mi:ss') || 
+            '(' || pvc.pedido_vent_estado || ')' AS pedido
+        FROM pedidos_vent_cab pvc 
+        JOIN empresas e ON e.id = pvc.empresa_id
+        JOIN sucursales s ON s.id = pvc.sucursal_id 
+        JOIN users u ON u.id = pvc.user_id 
+        WHERE pedido_vent_estado = 'CONFIRMADO' and pvc.user_id = {$r->user_id} and u.name ilike '%{$r->name}%';");
+    }
 }

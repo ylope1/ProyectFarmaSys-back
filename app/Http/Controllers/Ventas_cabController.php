@@ -257,7 +257,7 @@ class Ventas_cabController extends Controller
         ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
         ->first();
 
-        $subtotal = $det->compra_cant * $det->compra_costo;
+        $subtotal = $det->venta_cant * $det->venta_precio;
 
         if ($producto) {
             switch ($producto->tipo_imp_id) {

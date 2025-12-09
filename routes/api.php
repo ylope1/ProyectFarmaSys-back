@@ -279,24 +279,24 @@ Route::post("pedidos_vent_cab/create",[Pedidos_vent_cabController::class,"store"
 Route::put("pedidos_vent_cab/update/{id}",[Pedidos_vent_cabController::class,"update"]);
 Route::put("pedidos_vent_cab/anular/{id}",[Pedidos_vent_cabController::class,"anular"]);
 Route::put("pedidos_vent_cab/confirmar/{id}",[Pedidos_vent_cabController::class,"confirmar"]);
-//Route::post("pedidos_vent_cab/buscar",[Pedidos_vent_cabController::class,"buscar"]);
+Route::post("pedidos_vent_cab/buscar",[Pedidos_vent_cabController::class,"buscar"]);
 
 Route::get("pedidos_vent_det/read/{id}",[Pedidos_vent_detController::class,"read"]);
 Route::post("pedidos_vent_det/create",[Pedidos_vent_detController::class,"store"]);
 Route::put("pedidos_vent_det/update/{pedido_comp_id}/{producto_id}",[Pedidos_vent_detController::class,"update"]);
 Route::delete("pedidos_vent_det/delete/{pedido_comp_id}/{producto_id}",[Pedidos_vent_detController::class,"destroy"]);
 
-//Route::get("ventas_cab/read",[Ventas_cabController::class,"read"]);
-//Route::post("ventas_cab/create",[Ventas_cabController::class,"store"]);
-//Route::put("ventas_cab/update/{id}",[Ventas_cabController::class,"update"]);
-//Route::put("ventas_cab/anular/{id}",[Ventas_cabController::class,"anular"]);
-//Route::put("ventas_cab/confirmar/{id}",[Ventas_cabController::class,"confirmar"]);
-//Route::post("ventas_cab/buscar",[Ventas_cabController::class,"buscar"]);
+Route::get("ventas_cab/read",[Ventas_cabController::class,"read"]);
+Route::post("ventas_cab/create",[Ventas_cabController::class,"store"]);
+Route::put("ventas_cab/update/{id}",[Ventas_cabController::class,"update"]);
+Route::put("ventas_cab/anular/{id}",[Ventas_cabController::class,"anular"]);
+Route::put("ventas_cab/confirmar/{id}",[Ventas_cabController::class,"confirmar"]);
+Route::post("ventas_cab/buscar",[Ventas_cabController::class,"buscar"]);
 
-//Route::get("ventas_det/read/{id}",[Ventas_detController::class,"read"]);
-//Route::post("ventas_det/create",[Ventas_detController::class,"store"]);
-//Route::put("ventas_det/update/{compra_id}/{producto_id}",[Ventas_detController::class,"update"]);
-//Route::delete("ventas_det/delete/{compra_id}/{producto_id}",[Ventas_detController::class,"destroy"]);
+Route::get("ventas_det/read/{id}",[Ventas_detController::class,"read"]);
+Route::post("ventas_det/create",[Ventas_detController::class,"store"]);
+Route::put("ventas_det/update/{compra_id}/{producto_id}",[Ventas_detController::class,"update"]);
+Route::delete("ventas_det/delete/{compra_id}/{producto_id}",[Ventas_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
