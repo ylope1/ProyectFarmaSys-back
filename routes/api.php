@@ -46,6 +46,8 @@ use App\Http\Controllers\Ventas_cabController;
 use App\Http\Controllers\Ventas_detController;
 use App\Http\Controllers\Notas_venta_cabController;
 use App\Http\Controllers\Notas_venta_detController;
+use App\Http\Controllers\Remision_vent_cabController;
+use App\Http\Controllers\Remision_vent_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -311,6 +313,17 @@ Route::get("notas_venta_det/read/{id}",[Notas_venta_detController::class,"read"]
 Route::post("notas_venta_det/create",[Notas_venta_detController::class,"store"]);
 Route::put("notas_venta_det/update/{nota_venta_id}/{producto_id}",[Notas_venta_detController::class,"update"]);
 Route::delete("notas_venta_det/delete/{nota_venta_id}/{producto_id}",[Notas_venta_detController::class,"destroy"]);
+
+Route::get("remision_vent_cab/read",[Remision_vent_cabController::class,"read"]);
+Route::post("remision_vent_cab/create",[Remision_vent_cabController::class,"store"]);
+Route::put("remision_vent_cab/update/{id}",[Remision_vent_cabController::class,"update"]);
+Route::put("remision_vent_cab/anular/{id}",[Remision_vent_cabController::class,"anular"]);
+Route::put("remision_vent_cab/confirmar/{id}",[Remision_vent_cabController::class,"confirmar"]);
+
+Route::get("remision_vent_det/read/{id}",[Remision_vent_detController::class,"read"]);
+Route::post("remision_vent_det/create",[Remision_vent_detController::class,"store"]);
+Route::put("remision_vent_det/update/{remision_vent_id}/{producto_id}",[Remision_vent_detController::class,"update"]);
+Route::delete("remision_vent_det/delete/{remision_vent_id}/{producto_id}",[Remision_vent_detController::class,"destroy"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

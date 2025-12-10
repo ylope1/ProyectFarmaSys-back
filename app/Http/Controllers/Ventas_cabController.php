@@ -290,7 +290,7 @@ class Ventas_cabController extends Controller
                 $nuevoTotal = $stock->stock_cant_exist - $det->venta_cant;
 
                 if ($nuevoTotal < $stock->stock_cant_min) {
-                    $faltante = $nuevoTotal + $stock->stock_cant_min;
+                    $faltante = $stock->stock_cant_min - $nuevoTotal;
 
                     $stock->stock_cant_exist = $stock->stock_cant_min;
                     $stock->cantidad_exceso += $faltante;
@@ -365,11 +365,11 @@ class Ventas_cabController extends Controller
             'lib_vent_tipo_doc' => 'FACTURA',
             'lib_vent_nro_doc' => $venta->venta_fact,
             'lib_vent_monto' => $venta->monto_general,
-            'lib_vent_grav_10' => $monto_grav_10,
-            'lib_vent_iva_10' => $monto_iva_10,
-            'lib_vent_grav_5' => $monto_grav_5,
-            'lib_vent_iva_5' => $monto_iva_5,
-            'lib_vent_exentas' => $monto_exentas,
+            'lib_vent_grav_10' => $venta->monto_grav_10,
+            'lib_vent_iva_10' => $venta->monto_iva_10,
+            'lib_vent_grav_5' => $venta->monto_grav_5,
+            'lib_vent_iva_5' => $venta->monto_iva_5,
+            'lib_vent_exentas' => $venta->monto_exentas,
             'cliente_id' => $clientes->id,
             'cliente_nombre' => $clientes->nombre_cliente ?? '',
             'impuesto_id' => $producto->tipo_imp_id ?? null, 
@@ -403,7 +403,7 @@ class Ventas_cabController extends Controller
         JOIN sucursales s ON s.id = vc.sucursal_id 
         JOIN users u ON u.id = vc.user_id 
         WHERE vc.venta_estado = 'CONFIRMADO' 
-        AND cc.user_id = ? 
+        AND vc.user_id = ? 
         AND u.name ILIKE ?
         ", [$r->user_id, '%' . $r->name . '%']);
     }

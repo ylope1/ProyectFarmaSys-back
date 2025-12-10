@@ -100,7 +100,7 @@ class Notas_venta_cabController extends Controller
                 'producto_id'      => $det->producto_id,
                 'nota_venta_cant'      => $det->venta_cant,
                 'nota_venta_precio'     => $det->venta_precio,
-                'nota_comp_motivo' => 'Cambio de Producto'
+                'nota_venta_motivo' => 'Cambio de Producto'
             ]);
         }
 
@@ -181,6 +181,12 @@ class Notas_venta_cabController extends Controller
         }
 
         $detalles = Notas_venta_det::where('nota_venta_id', $id)->get();
+        if ($detalles->isEmpty()) {
+            return response()->json([
+                'mensaje' => 'No se puede confirmar una nota sin detalles.',
+                'tipo' => 'error'
+            ], 400);
+        }
 
         // Inicializar acumuladores de totales
         $monto_grav_5 = 0;
@@ -196,7 +202,7 @@ class Notas_venta_cabController extends Controller
         ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
         ->first();
 
-        $subtotal = $det->venta_cant * $det->venta_precio;
+        $subtotal = $det->nota_venta_cant * $det->nota_venta_precio;
 
         if ($producto) {
             switch ($producto->tipo_imp_id) {
@@ -227,7 +233,7 @@ class Notas_venta_cabController extends Controller
                     ->first();
 
             if ($stock) {
-                $ajuste = ($nota->nota_vent_tipo === 'NC') ? -$det->venta_cant : $det->venta_cant;
+                $ajuste = ($nota->nota_vent_tipo === 'NC') ? -$det->nota_venta_cant : $det->nota_venta_cant;
                 $stock->stock_cant_exist += $ajuste;
                 $stock->fecha_movimiento = $nota->nota_vent_fec;
                 $stock->motivo = 'AJUSTE NOTA ' . ($nota->nota_vent_tipo === 'NC' ? 'CRÉDITO' : 'DÉBITO');
@@ -236,6 +242,7 @@ class Notas_venta_cabController extends Controller
         }
             // Actualizar totales en la nota
         $nota->monto_grav_5 = $monto_grav_5;
+        $nota->monto_grav_10 = $monto_grav_10;
         $nota->monto_iva_10 = $monto_iva_10;
         $nota->monto_iva_5 = $monto_iva_5;
         $nota->monto_exentas = $monto_exentas;
@@ -249,7 +256,12 @@ class Notas_venta_cabController extends Controller
             ->where('p.id', $primerDetalle->producto_id)
             ->select('ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
             ->first();
-        $clientes = Clientes::find($nota->cliente_id); //probablemente debo corregir
+        $clientes = DB::table('clientes as c')
+            ->join('personas as p', 'c.persona_id', '=', 'p.id')
+            ->where('c.id', $nota->cliente_id)
+            ->select('c.id as cliente_id', 'c.cli_ruc', 
+                DB::raw("p.pers_nombre || ' ' || p.pers_apellido as cliente_nombre"))
+            ->first();
 
         Libro_Ventas::create([ 
             'venta_id' => $nota->venta_id,
@@ -263,26 +275,29 @@ class Notas_venta_cabController extends Controller
             'lib_vent_grav_5' => $nota->monto_grav_5,
             'lib_vent_iva_5' => $nota->monto_iva_5,
             'lib_vent_exentas' => $nota->monto_exentas,
-            'cliente_id' => $cliente->id,
+            'cliente_id' => $clientes->cliente_id, 
             'cliente_nombre' => $clientes->cliente_nombre ?? '',
             'impuesto_id' => $producto->tipo_imp_id ?? null,
             'impuesto_desc' => $producto->tipo_imp_desc ?? '',
         ]);
 
-        // AJUSTAR CUENTAS A COBRAR si la venta fue a CRÉDITO
+         // AJUSTAR CUENTAS A COBRAR si la venta fue a CRÉDITO
         $venta = Ventas_cab::find($nota->venta_id);
 
         if ($venta && (int)$venta->tipo_fact_id === 7) { // 7 = crédito
             $cuentas = Ctas_cobrar::where('venta_id', $nota->venta_id)->get();
-            $montoParcial = $nota->monto_general / max($cuentas->count(), 1);
-
-            foreach ($cuentas as $cuenta) {
-                if ($nota->nota_vent_tipo === 'NC') {
-                $cuenta->saldo -= $montoParcial;
-                } elseif ($nota->nota_vent_tipo === 'ND') {
-                $cuenta->saldo += $montoParcial;
+            
+            if ($cuentas->count() > 0) {
+                $montoParcial = $nota->monto_general / $cuentas->count();
+                
+                foreach ($cuentas as $cuenta) {
+                    if ($nota->nota_vent_tipo === 'NC') {
+                        $cuenta->ctas_cob_saldo -= $montoParcial; // O el nombre correcto del campo
+                    } elseif ($nota->nota_vent_tipo === 'ND') {
+                        $cuenta->ctas_cob_saldo += $montoParcial; // O el nombre correcto del campo
+                    }
+                    $cuenta->save();
                 }
-                $cuenta->save();
             }
         }
 

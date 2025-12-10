@@ -15,8 +15,8 @@ class Notas_venta_detController extends Controller
                 p.prod_desc,
                 ti.id as impuesto_id, 
                 ti.impuesto_desc
-            FROM notas_venta_det ncd
-            JOIN productos p ON p.id = ncd.producto_id
+            FROM notas_venta_det nvd
+            JOIN productos p ON p.id = nvd.producto_id
             JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
             WHERE nvd.nota_venta_id = ?;
         ", [$id]);
