@@ -168,5 +168,20 @@ class FuncionarioController extends Controller
             AND (p.pers_nombre || ' ' || p.pers_apellido) ILIKE ?
         ", ['%' . $chofer . '%']);
     }
+    public function buscarRepartidor(Request $r){
+        
+        $remision_vent_repartidor = $r->remision_vent_repartidor;
+        
+        return DB::select("
+        SELECT 
+            p.id,
+            p.pers_nombre || ' ' || p.pers_apellido AS remision_vent_repartidor
+            FROM personas p 
+            JOIN funcionarios f ON f.persona_id = p.id 
+            JOIN cargos c ON c.id = f.cargo_id
+            WHERE c.id = 3 
+            AND (p.pers_nombre || ' ' || p.pers_apellido) ILIKE ?
+        ", ['%' . $remision_vent_repartidor . '%']);
+    }
     
 }

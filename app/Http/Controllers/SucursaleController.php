@@ -10,10 +10,10 @@ class SucursaleController extends Controller
 {
     public function read(){
         return DB::select("select s.*, p.pais_desc, c.ciudad_desc, e.empresa_desc 
-from sucursales s 
-join paises p on p.id = s.pais_id 
-join ciudades c on c.id = s.ciudad_id 
-join empresas e on e.id = s.empresa_id;");
+        from sucursales s 
+        join paises p on p.id = s.pais_id 
+        join ciudades c on c.id = s.ciudad_id 
+        join empresas e on e.id = s.empresa_id;");
     }
 
     public function store(Request $request){

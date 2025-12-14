@@ -48,6 +48,7 @@ use App\Http\Controllers\Notas_venta_cabController;
 use App\Http\Controllers\Notas_venta_detController;
 use App\Http\Controllers\Remision_vent_cabController;
 use App\Http\Controllers\Remision_vent_detController;
+use App\Http\Controllers\Aperturas_cierresController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -131,7 +132,8 @@ Route::post("funcionario/create",[FuncionarioController::class,"store"]);
 Route::put("funcionario/update/{id}",[FuncionarioController::class,"update"]);
 Route::delete("funcionario/delete/{id}",[FuncionarioController::class,"destroy"]);
 Route::post("funcionario/search", [FuncionarioController::class,'buscar']);
-route::post("funcionario/buscarChofer", [FuncionarioController::class,'buscarChofer']);
+Route::post("funcionario/buscarChofer", [FuncionarioController::class,'buscarChofer']);
+Route::post("funcionario/buscarRepartidor", [FuncionarioController::class,'buscarRepartidor']);
 
 Route::get("marca/read",[MarcaController::class,"read"]);
 Route::post("marca/create",[MarcaController::class,"store"]);
@@ -192,6 +194,7 @@ Route::post("clientes/create",[ClientesController::class,"store"]);
 Route::put("clientes/update/{id}",[ClientesController::class,"update"]);
 Route::delete("clientes/delete/{id}",[ClientesController::class,"destroy"]);
 Route::post("clientes/buscar",[ClientesController::class, 'buscar']);
+Route::post("clientes/buscarClient",[ClientesController::class, 'buscarClient']);
 
 Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
 Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
@@ -319,11 +322,28 @@ Route::post("remision_vent_cab/create",[Remision_vent_cabController::class,"stor
 Route::put("remision_vent_cab/update/{id}",[Remision_vent_cabController::class,"update"]);
 Route::put("remision_vent_cab/anular/{id}",[Remision_vent_cabController::class,"anular"]);
 Route::put("remision_vent_cab/confirmar/{id}",[Remision_vent_cabController::class,"confirmar"]);
+route::put("remision_vent_cab/enviar/{id}",[Remision_vent_cabController::class,"enviar"]);
 
 Route::get("remision_vent_det/read/{id}",[Remision_vent_detController::class,"read"]);
 Route::post("remision_vent_det/create",[Remision_vent_detController::class,"store"]);
 Route::put("remision_vent_det/update/{remision_vent_id}/{producto_id}",[Remision_vent_detController::class,"update"]);
 Route::delete("remision_vent_det/delete/{remision_vent_id}/{producto_id}",[Remision_vent_detController::class,"destroy"]);
+
+Route::prefix('aperturas_cierres')->group(function () {
+
+    // Listar aperturas/cierres del usuario logueado
+    Route::get('read', [Aperturas_cierresController::class, 'read']);
+
+    // Verificar si el usuario tiene una caja abierta
+    Route::get('buscar_caja_abierta', [Aperturas_cierresController::class, 'buscarCajaAbierta']);
+
+    // Apertura de caja
+    Route::post('abrir', [Aperturas_cierresController::class, 'storeApertura']);
+
+    // Cierre de caja
+    Route::post('cerrar', [Aperturas_cierresController::class, 'cerrarCaja']);
+
+});
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);

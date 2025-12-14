@@ -4,17 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cajas;
+use App\Models\Empresas;
+use App\Models\Sucursales;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class CajaController extends Controller
 {
     public function read(){
-        return Cajas::all();
+        return DB::select("select 
+            c.*,
+            e.empresa_desc,
+            s.suc_desc,
+            u.login 
+            from cajas c
+            JOIN empresas e ON e.id = c.empresa_id
+            JOIN sucursales s ON s.id = c.sucursal_id
+            join users u on u.id = c.user_id;"
+        );
     }
 
     public function store(Request $request){
         $datosValidados = $request->validate([
-            'caja_desc'=>'required'
+            'caja_desc'=>'required',
+            'sucursal_id'=>'required',
+            'empresa_id'=>'required',
+            'user_id'=>'required'
         ]);
         $caja = Cajas::create($datosValidados);
         $caja->save();
@@ -33,7 +48,10 @@ class CajaController extends Controller
             ],404);
         }
         $datosValidados = $request->validate([
-            'caja_desc'=>'required'
+            'caja_desc'=>'required',
+            'sucursal_id'=>'required',
+            'empresa_id'=>'required',
+            'user_id'=>'required'
         ]);
         $caja->update($datosValidados);
         return response()->json([

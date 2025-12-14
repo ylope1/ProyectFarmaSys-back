@@ -148,4 +148,27 @@ class ClientesController extends Controller
             '%' . $request->cliente_ci . '%'
         ]);
     }
+    // Función para buscar clientes con direccion y telefono
+    public function buscarClient(Request $request){
+        return DB::select(" 
+            select 
+                c.id as cliente_id,
+                p.pers_nombre||' '||p.pers_apellido as nombre_cliente, 
+                p.pers_ci as cliente_ci, 
+                c.cli_ruc,
+                p.pers_direc as cli_direc,
+                p.pers_telef as cli_telef
+            from clientes c 
+            join personas p on p.id = c.persona_id 
+            where 
+                (
+                    p.pers_ci = ? 
+                    OR c.cli_ruc ilike ?
+                )
+            and c.cli_estado = 'Activo'
+            ", [
+            $request->cliente_ci,
+            '%' . $request->cliente_ci . '%'
+        ]);
+    }
 }
