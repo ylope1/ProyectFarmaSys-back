@@ -198,7 +198,21 @@ class Aperturas_cierresController extends Controller
                 ], 400);
             }
 
-            // 2. Calcular monto sistema desde movimientos
+            // 2. VALIDAR ARQUEO FINAL CONFIRMADO
+            $existeArqueoFinal = DB::table('arqueo_caja')
+                ->where('apertura_cierre_id', $apertura->id)
+                ->where('arqueo_tipo', 'FINAL')
+                ->where('arqueo_estado', 'CONFIRMADO')
+                ->exists();
+
+            if (!$existeArqueoFinal) {
+                return response()->json([
+                    'error' => true,
+                    'mensaje' => 'No se puede cerrar la caja sin un arqueo FINAL confirmado'
+                ], 400);
+            }
+
+            // 3. Calcular monto sistema desde movimientos
             $ingresos = DB::table('movimientos_caja')
                 ->where('apertura_cierre_id', $apertura->id)
                 ->where('mov_tipo', 'INGRESO')
@@ -211,11 +225,11 @@ class Aperturas_cierresController extends Controller
 
             $montoSistema = $ingresos - $egresos;
 
-            // 3. Calcular diferencia
+            // 4. Calcular diferencia
             $montoArqueo = $request->monto_arqueo;
             $diferencia = $montoArqueo - $montoSistema;
 
-            // 4. Actualizar cierre
+            // 5. Actualizar cierre
             $apertura->update([
                 'cierre_fec' => now(),
                 'cierre_monto_sistema' => $montoSistema,

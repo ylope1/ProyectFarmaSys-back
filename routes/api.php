@@ -49,6 +49,7 @@ use App\Http\Controllers\Notas_venta_detController;
 use App\Http\Controllers\Remision_vent_cabController;
 use App\Http\Controllers\Remision_vent_detController;
 use App\Http\Controllers\Aperturas_cierresController;
+use App\Http\Controllers\Arqueo_cajaController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -344,6 +345,11 @@ Route::prefix('aperturas_cierres')->group(function () {
     Route::post('cerrar', [Aperturas_cierresController::class, 'cerrarCaja']);
 
 });
+
+Route::get("arqueo_caja/read",[Arqueo_cajaController::class,"read"]);
+Route::post("arqueo_caja/create",[Arqueo_cajaController::class,"store"]);
+Route::put("arqueo_caja/anular/{id}",[Arqueo_cajaController::class,"anular"]);
+Route::put("arqueo_caja/confirmar/{id}",[Arqueo_cajaController::class,"confirmar"]);
 
 Route::get("perfiles/read",[PerfilController::class,"read"]);
 Route::post("perfiles/create",[PerfilController::class,"store"]);
