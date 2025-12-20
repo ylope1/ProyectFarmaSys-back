@@ -15,14 +15,15 @@ class Arqueo_cajaController extends Controller
     {
         try {
 
-            $aperturaId = $request->apertura_cierre_id;
+             $userId = $request->user_id;
 
-            if (!$aperturaId) {
+            if (!$userId) {
                 return response()->json([], 200);
             }
 
             $data = DB::table('arqueo_caja as a')
-                ->join('users as u', 'u.id', '=', 'a.user_id')
+                ->join('aperturas_cierres as ac', 'ac.id', '=', 'a.apertura_cierre_id')
+                ->join('cajas as c', 'c.id', '=', 'ac.caja_id')
                 ->select(
                     'a.id',
                     DB::raw("to_char(a.arqueo_fec, 'DD/MM/YYYY HH24:MI') as arqueo_fec"),
@@ -31,9 +32,9 @@ class Arqueo_cajaController extends Controller
                     'a.arqueo_monto',
                     'a.arqueo_diferencia',
                     'a.arqueo_estado',
-                    'u.login as usuario'
+                    'c.caja_desc'
                 )
-                ->where('a.apertura_cierre_id', $aperturaId)
+                ->where('a.user_id', $userId)
                 ->orderBy('a.arqueo_fec', 'desc')
                 ->get();
 
@@ -41,7 +42,7 @@ class Arqueo_cajaController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'error'   => true,
+                'error' => true,
                 'mensaje' => $e->getMessage()
             ], 500);
         }
@@ -54,7 +55,7 @@ class Arqueo_cajaController extends Controller
             $request->validate([
                 'apertura_cierre_id' => 'required|integer',
                 'user_id'            => 'required|integer',
-                'arqueo_fec'         => 'required|date',
+                'arqueo_fec'         => 'required',
                 'arqueo_tipo'        => 'required|string',
                 'arqueo_monto'       => 'required|numeric|min:0'
             ]);
@@ -132,46 +133,37 @@ class Arqueo_cajaController extends Controller
         }
     }
 
-    public function confirmar(Request $request)
+    public function confirmar($id)
     {
         try {
 
-            $request->validate([
-                'arqueo_id' => 'required|integer'
-            ]);
-
-            $arqueo = Arqueo_caja::find($request->arqueo_id);
+            // 1. Buscar arqueo por ID (viene de la ruta)
+            $arqueo = Arqueo_caja::find($id);
 
             if (!$arqueo) {
                 return response()->json([
                     'error' => true,
                     'mensaje' => 'Arqueo no encontrado'
-                ], 400);
+                ], 404);
             }
 
+            // 2. Validar estado
             if ($arqueo->arqueo_estado !== 'REGISTRADO') {
                 return response()->json([
                     'error' => true,
-                    'mensaje' => 'Solo se pueden confirmar arqueos en estado REGISTRADO'
+                    'mensaje' => 'Solo se puede confirmar un arqueo en estado REGISTRADO'
                 ], 400);
             }
 
-            // Si es FINAL, verificar que no exista otro FINAL confirmado
-            if ($arqueo->arqueo_tipo === 'FINAL') {
-
-                $existeFinal = Arqueo_caja::where('apertura_cierre_id', $arqueo->apertura_cierre_id)
-                    ->where('arqueo_tipo', 'FINAL')
-                    ->where('arqueo_estado', 'CONFIRMADO')
-                    ->exists();
-
-                if ($existeFinal) {
-                    return response()->json([
-                        'error' => true,
-                        'mensaje' => 'Ya existe un arqueo FINAL confirmado'
-                    ], 400);
-                }
+            // 3. Validar tipo
+            if ($arqueo->arqueo_tipo !== 'FINAL') {
+                return response()->json([
+                    'error' => true,
+                    'mensaje' => 'Solo se puede confirmar un arqueo FINAL'
+                ], 400);
             }
 
+            // 4. Confirmar
             $arqueo->update([
                 'arqueo_estado' => 'CONFIRMADO'
             ]);
@@ -225,4 +217,43 @@ class Arqueo_cajaController extends Controller
             ], 500);
         }
     }
+
+    //funcion buscar
+    public function buscar(Request $request)
+    {
+        try {
+
+            $request->validate([
+                'apertura_cierre_id' => 'required|integer'
+            ]);
+
+            $arqueo = DB::table('arqueo_caja')
+                ->where('apertura_cierre_id', $request->apertura_cierre_id)
+                ->where('arqueo_tipo', 'FINAL')
+                ->where('arqueo_estado', 'CONFIRMADO')
+                ->first();
+
+            if (!$arqueo) {
+                return response()->json([
+                    'existe' => false,
+                    'mensaje' => 'No existe arqueo FINAL confirmado'
+                ], 200);
+            }
+
+            return response()->json([
+                'existe'          => true,
+                'arqueo_id'       => $arqueo->id,
+                'monto_sistema'   => $arqueo->arqueo_monto_sistema,
+                'monto_arqueo'    => $arqueo->arqueo_monto,
+                'diferencia'      => $arqueo->arqueo_diferencia
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error'   => true,
+                'mensaje' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

@@ -26,6 +26,10 @@ use App\Http\Controllers\RubroController;
 use App\Http\Controllers\Remision_MotivoController;
 use App\Http\Controllers\VehiculosController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\Marcas_tarjetasController;
+use App\Http\Controllers\Entidades_emisorasController;
+use App\Http\Controllers\Entidades_adheridasController;
+use App\Http\Controllers\Entidades_adheridas_tarjetasController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\Presup_comp_cabController;
@@ -50,6 +54,10 @@ use App\Http\Controllers\Remision_vent_cabController;
 use App\Http\Controllers\Remision_vent_detController;
 use App\Http\Controllers\Aperturas_cierresController;
 use App\Http\Controllers\Arqueo_cajaController;
+use App\Http\Controllers\Cobros_cabController;
+use App\Http\Controllers\Cobros_detController;
+use App\Http\Controllers\Cobros_tarjetasController;
+use App\Http\Controllers\Cobros_chequesController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -165,6 +173,29 @@ Route::post("caja/create",[CajaController::class,"store"]);
 Route::put("caja/update/{id}",[CajaController::class,"update"]);
 Route::delete("caja/delete/{id}",[CajaController::class,"destroy"]);
 Route::post("caja/search",[CajaController::class, 'buscar']);
+
+Route::get("marcas_tarjetas/read", [Marcas_tarjetasController::class, "read"]);
+Route::post("marcas_tarjetas/create", [Marcas_tarjetasController::class, "store"]);
+Route::put("marcas_tarjetas/update/{id}", [Marcas_tarjetasController::class, "update"]);
+Route::delete("marcas_tarjetas/delete/{id}", [Marcas_tarjetasController::class, "destroy"]);
+Route::post("marcas_tarjetas/buscar", [Marcas_tarjetasController::class, "buscar"]);
+
+Route::get("entidades_emisoras/read", [Entidades_emisorasController::class, "read"]);
+Route::post("entidades_emisoras/create", [Entidades_emisorasController::class, "store"]);
+Route::put("entidades_emisoras/update/{id}", [Entidades_emisorasController::class, "update"]);
+Route::delete("entidades_emisoras/delete/{id}", [Entidades_emisorasController::class, "destroy"]);
+Route::post("entidades_emisoras/buscar", [Entidades_emisorasController::class, "buscar"]);
+
+Route::get("entidades_adheridas/read", [Entidades_adheridasController::class, "read"]);
+Route::post("entidades_adheridas/create", [Entidades_adheridasController::class, "store"]);
+Route::put("entidades_adheridas/update/{id}", [Entidades_adheridasController::class, "update"]);
+Route::delete("entidades_adheridas/delete/{id}", [Entidades_adheridasController::class, "destroy"]);
+Route::post("entidades_adheridas/buscar", [Entidades_adheridasController::class, "buscar"]);
+
+Route::get("entidades_adheridas_tarjetas/read", [Entidades_adheridas_tarjetasController::class, "read"]);
+Route::post("entidades_adheridas_tarjetas/create", [Entidades_adheridas_tarjetasController::class, "store"]);
+Route::delete("entidades_adheridas_tarjetas/delete/{id}", [Entidades_adheridas_tarjetasController::class, "destroy"]);
+Route::post("entidades_adheridas_tarjetas/buscar", [Entidades_adheridas_tarjetasController::class, "buscar"]);
 
 Route::get("documento/read",[DocumentoController::class,"read"]);
 Route::post("documento/create",[DocumentoController::class,"store"]);
@@ -343,16 +374,36 @@ Route::prefix('aperturas_cierres')->group(function () {
 
     // Cierre de caja
     Route::post('cerrar', [Aperturas_cierresController::class, 'cerrarCaja']);
-
 });
 
 Route::get("arqueo_caja/read",[Arqueo_cajaController::class,"read"]);
 Route::post("arqueo_caja/create",[Arqueo_cajaController::class,"store"]);
 Route::put("arqueo_caja/anular/{id}",[Arqueo_cajaController::class,"anular"]);
 Route::put("arqueo_caja/confirmar/{id}",[Arqueo_cajaController::class,"confirmar"]);
+Route::post("arqueo_caja/buscarArqueo",[Arqueo_cajaController::class,"buscar"]);
 
-Route::get("perfiles/read",[PerfilController::class,"read"]);
-Route::post("perfiles/create",[PerfilController::class,"store"]);
+Route::get("cobros_cab/read", [Cobros_cabController::class, "read"]);
+Route::post("cobros_cab/create", [Cobros_cabController::class, "store"]);
+Route::put("cobros_cab/update/{id}", [Cobros_cabController::class, "update"]);
+Route::put("cobros_cab/anular/{id}", [Cobros_cabController::class, "anular"]);
+Route::put("cobros_cab/anular_confirmado/{id}", [Cobros_cabController::class, "anularConfirmado"]);
+Route::put("cobros_cab/confirmar/{id}", [Cobros_cabController::class, "confirmar"]);
+Route::post("cobros_cab/buscar", [Cobros_cabController::class, "buscar"]);
+
+Route::get("cobros_det/read/{cobro_id}", [CobrosDetController::class, "read"]);
+Route::post("cobros_det/create", [CobrosDetController::class, "store"]);
+Route::delete("cobros_det/delete",[CobrosDetController::class, "destroy"]);
+
+Route::get("cobros_tarjetas/read/{cobro_id}", [Cobros_tarjetasController::class, "read"]);
+Route::post("cobros_tarjetas/create", [Cobros_tarjetasController::class, "store"]);
+Route::delete("cobros_tarjetas/delete", [Cobros_tarjetasController::class, "destroy"]);
+
+Route::get("cobros_cheques/read/{cobro_id}", [Cobros_chequesController::class, "read"]);
+Route::post("cobros_cheques/create", [Cobros_chequesController::class, "store"]);
+Route::delete("cobros_cheques/delete", [Cobros_chequesController::class, "destroy"]);
+
+Route::get("perfiles/read", [PerfilController::class,"read"]);
+Route::post("perfiles/create", [PerfilController::class,"store"]);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

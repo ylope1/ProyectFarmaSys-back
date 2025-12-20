@@ -47,11 +47,18 @@ class Aperturas_cierresController extends Controller
         }
     }
     
-    public function buscarCajaAbierta()
+    public function buscarCajaAbierta(Request $request)
     {
         try {
 
-            $userId = Auth::id();
+            $userId = $request->user_id;
+
+            if (!$userId) {
+                return response()->json([
+                    'abierta' => false,
+                    'mensaje' => 'Usuario no identificado'
+                ], 200);
+            }
 
             // 1. Buscar caja asignada al usuario
             $caja = Cajas::where('user_id', $userId)->first();
@@ -71,7 +78,8 @@ class Aperturas_cierresController extends Controller
 
             if (!$apertura) {
                 return response()->json([
-                    'abierta' => false
+                    'abierta' => false,
+                    'mensaje' => 'No existe una caja abierta'
                 ], 200);
             }
 
@@ -177,11 +185,10 @@ class Aperturas_cierresController extends Controller
         try {
 
             $request->validate([
-                'apertura_cierre_id' => 'required|integer',
-                'monto_arqueo' => 'required|numeric|min:0'
+                'apertura_cierre_id' => 'required|integer'
             ]);
 
-            // 1. Buscar la apertura seleccionada
+            // 1. Buscar apertura
             $apertura = Aperturas_cierres::find($request->apertura_cierre_id);
 
             if (!$apertura) {
@@ -198,59 +205,37 @@ class Aperturas_cierresController extends Controller
                 ], 400);
             }
 
-            // 2. VALIDAR ARQUEO FINAL CONFIRMADO
-            $existeArqueoFinal = DB::table('arqueo_caja')
+            // 2. Buscar arqueo FINAL + CONFIRMADO
+            $arqueo = DB::table('arqueo_caja')
                 ->where('apertura_cierre_id', $apertura->id)
                 ->where('arqueo_tipo', 'FINAL')
                 ->where('arqueo_estado', 'CONFIRMADO')
-                ->exists();
+                ->first();
 
-            if (!$existeArqueoFinal) {
+            if (!$arqueo) {
                 return response()->json([
                     'error' => true,
-                    'mensaje' => 'No se puede cerrar la caja sin un arqueo FINAL confirmado'
+                    'mensaje' => 'Debe confirmar un arqueo FINAL antes de cerrar la caja'
                 ], 400);
             }
 
-            // 3. Calcular monto sistema desde movimientos
-            $ingresos = DB::table('movimientos_caja')
-                ->where('apertura_cierre_id', $apertura->id)
-                ->where('mov_tipo', 'INGRESO')
-                ->sum('mov_monto');
-
-            $egresos = DB::table('movimientos_caja')
-                ->where('apertura_cierre_id', $apertura->id)
-                ->where('mov_tipo', 'EGRESO')
-                ->sum('mov_monto');
-
-            $montoSistema = $ingresos - $egresos;
-
-            // 4. Calcular diferencia
-            $montoArqueo = $request->monto_arqueo;
-            $diferencia = $montoArqueo - $montoSistema;
-
-            // 5. Actualizar cierre
+            // 3. Actualizar cierre usando arqueo
             $apertura->update([
-                'cierre_fec' => now(),
-                'cierre_monto_sistema' => $montoSistema,
-                'cierre_monto_arqueo' => $montoArqueo,
-                'cierre_diferencia' => $diferencia,
-                'estado' => 'CERRADA'
+                'cierre_fec'             => now(),
+                'cierre_monto_sistema'   => $arqueo->arqueo_monto_sistema,
+                'cierre_monto_arqueo'    => $arqueo->arqueo_monto,
+                'cierre_diferencia'      => $arqueo->arqueo_diferencia,
+                'estado'                 => 'CERRADA'
             ]);
 
             return response()->json([
-                'error' => false,
-                'mensaje' => 'Caja cerrada correctamente',
-                'resumen' => [
-                    'monto_sistema' => $montoSistema,
-                    'monto_arqueo' => $montoArqueo,
-                    'diferencia' => $diferencia
-                ]
+                'error'   => false,
+                'mensaje' => 'Caja cerrada correctamente usando arqueo confirmado'
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => true,
+                'error'   => true,
                 'mensaje' => $e->getMessage()
             ], 500);
         }
