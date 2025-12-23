@@ -173,6 +173,7 @@ Route::post("caja/create",[CajaController::class,"store"]);
 Route::put("caja/update/{id}",[CajaController::class,"update"]);
 Route::delete("caja/delete/{id}",[CajaController::class,"destroy"]);
 Route::post("caja/search",[CajaController::class, 'buscar']);
+Route::post("caja/buscarCajas",[CajaController::class, 'buscarCajas']);
 
 Route::get("marcas_tarjetas/read", [Marcas_tarjetasController::class, "read"]);
 Route::post("marcas_tarjetas/create", [Marcas_tarjetasController::class, "store"]);
@@ -331,6 +332,7 @@ Route::put("ventas_cab/update/{id}",[Ventas_cabController::class,"update"]);
 Route::put("ventas_cab/anular/{id}",[Ventas_cabController::class,"anular"]);
 Route::put("ventas_cab/confirmar/{id}",[Ventas_cabController::class,"confirmar"]);
 Route::post("ventas_cab/buscar",[Ventas_cabController::class,"buscar"]);
+Route::post("ventas_cab/buscarVentFactSuc", [Ventas_cabController::class, "buscarVentFactSuc"]);
 
 Route::get("ventas_det/read/{id}",[Ventas_detController::class,"read"]);
 Route::post("ventas_det/create",[Ventas_detController::class,"store"]);
@@ -375,6 +377,7 @@ Route::prefix('aperturas_cierres')->group(function () {
     // Cierre de caja
     Route::post('cerrar', [Aperturas_cierresController::class, 'cerrarCaja']);
 });
+Route::post("aperturas_cierres/buscarAperturaCaja", [Aperturas_cierresController::class, "buscarAperturaCaja"]);
 
 Route::get("arqueo_caja/read",[Arqueo_cajaController::class,"read"]);
 Route::post("arqueo_caja/create",[Arqueo_cajaController::class,"store"]);
@@ -388,11 +391,13 @@ Route::put("cobros_cab/update/{id}", [Cobros_cabController::class, "update"]);
 Route::put("cobros_cab/anular/{id}", [Cobros_cabController::class, "anular"]);
 Route::put("cobros_cab/anular_confirmado/{id}", [Cobros_cabController::class, "anularConfirmado"]);
 Route::put("cobros_cab/confirmar/{id}", [Cobros_cabController::class, "confirmar"]);
-Route::post("cobros_cab/buscar", [Cobros_cabController::class, "buscar"]);
+Route::get('cobros_cab/total_cheques_apertura', [Cobros_cabController::class, 'totalChequesApertura']);
+Route::get('cobros_cab/total_tarjetas_apertura', [Cobros_cabController::class, 'totalTarjetasApertura']);
 
 Route::get("cobros_det/read/{cobro_id}", [CobrosDetController::class, "read"]);
 Route::post("cobros_det/create", [CobrosDetController::class, "store"]);
 Route::delete("cobros_det/delete",[CobrosDetController::class, "destroy"]);
+Route::post("cobros_det/buscarCtaCobro", [Cobros_detController::class, "buscarCtaCobro"]);
 
 Route::get("cobros_tarjetas/read/{cobro_id}", [Cobros_tarjetasController::class, "read"]);
 Route::post("cobros_tarjetas/create", [Cobros_tarjetasController::class, "store"]);

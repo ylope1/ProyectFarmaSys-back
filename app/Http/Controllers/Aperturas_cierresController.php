@@ -241,4 +241,17 @@ class Aperturas_cierresController extends Controller
         }
     }
 
+    public function buscarAperturaCaja(Request $r)
+    {
+        return DB::select("SELECT 
+            ac.id as apertura_cierre_id,
+            'APERTURA #' || ac.id as apertura_cierre_desc  -- Formateamos el texto a mostrar
+            FROM aperturas_cierres ac
+            WHERE ac.estado = 'ABIERTA'
+            AND ac.caja_id = ?
+            ORDER BY ac.apertura_fec DESC
+            LIMIT 1", 
+        [$r->caja_id]);
+    }
+
 }

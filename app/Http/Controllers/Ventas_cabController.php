@@ -407,4 +407,51 @@ class Ventas_cabController extends Controller
         AND u.name ILIKE ?
         ", [$r->user_id, '%' . $r->name . '%']);
     }
+
+    public function buscarVentFactSuc(Request $r){
+    $query = "SELECT 
+        vc.id,
+        to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') AS venta_fec,
+        vc.venta_estado,
+        vc.venta_fact,  -- Número de factura
+        vc.empresa_id,  
+        e.empresa_desc,
+        vc.sucursal_id, 
+        s.suc_desc,
+        vc.user_id, 
+        u.name AS vendedor,
+        vc.id as venta_id,
+        'VENTA NRO:' || to_char(vc.id, '0000000') || 
+        ' FECHA: ' || to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') || 
+        ' (' || vc.venta_estado || ')' AS venta,
+        'FACTURA: ' || vc.venta_fact AS venta_fact
+    FROM ventas_cab vc 
+    JOIN empresas e ON e.id = vc.empresa_id
+    JOIN sucursales s ON s.id = vc.sucursal_id 
+    JOIN users u ON u.id = vc.user_id 
+    WHERE vc.venta_estado = 'CONFIRMADO'";
+    
+    $params = [];
+    
+    // FILTRO OBLIGATORIO por sucursal (seguridad multi-sucursal)
+    if ($r->has('sucursal_id') && !empty($r->sucursal_id)) {
+        $query .= " AND vc.sucursal_id = ?";
+        $params[] = $r->sucursal_id;
+    } else {
+        // Opción 1: Devolver error
+        return response()->json([
+            'error' => true,
+            'mensaje' => 'Se requiere el parámetro sucursal_id'
+        ], 400);
+    }
+    
+    // Filtro opcional por número de factura
+    if ($r->has('venta_fact') && !empty($r->venta_fact)) {
+        $query .= " AND vc.venta_fact ILIKE ?";
+        $params[] = '%' . $r->venta_fact . '%';
+    }
+    // Ordenar por fecha descendente (más recientes primero)
+    $query .= " ORDER BY vc.venta_fec DESC";
+    return DB::select($query, $params);
+}
 }

@@ -81,4 +81,23 @@ class CajaController extends Controller
         from cajas c 
         where c.caja_desc ilike '%$request->caja_desc%';");
     }
+
+    //Funcion buscar Cajas por Sucursal y Usuario
+    public function buscarCajas(Request $r)
+    {
+        return DB::select("SELECT 
+            c.id as caja_id,
+            c.caja_desc,
+            c.sucursal_id,
+            s.suc_desc,
+            c.user_id as user_id,
+            u.name as usuario
+            FROM cajas c
+            JOIN sucursales s ON s.id = c.sucursal_id
+            LEFT JOIN users u ON u.id = c.user_id
+            WHERE c.sucursal_id = ?
+            AND c.user_id = ?
+            ORDER BY c.caja_desc", 
+        [$r->sucursal_id, $r->user_id]);
+    }
 }
