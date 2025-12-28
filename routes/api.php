@@ -30,6 +30,8 @@ use App\Http\Controllers\Marcas_tarjetasController;
 use App\Http\Controllers\Entidades_emisorasController;
 use App\Http\Controllers\Entidades_adheridasController;
 use App\Http\Controllers\Entidades_adheridas_tarjetasController;
+use App\Http\Controllers\TitularesController;
+use App\Http\Controllers\Cta_bancariasController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\Presup_comp_cabController;
@@ -58,6 +60,11 @@ use App\Http\Controllers\Cobros_cabController;
 use App\Http\Controllers\Cobros_detController;
 use App\Http\Controllers\Cobros_tarjetasController;
 use App\Http\Controllers\Cobros_chequesController;
+use App\Http\Controllers\Facturas_varias_cabController;
+use App\Http\Controllers\Facturas_varias_detController;
+use App\Http\Controllers\Orden_pago_cabController;
+use App\Http\Controllers\Orden_pago_detController;
+use App\Http\Controllers\Orden_pago_det_fact_varController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -167,6 +174,7 @@ Route::post("forma_cobro/create",[Forma_cobroController::class,"store"]);
 Route::put("forma_cobro/update/{id}",[Forma_cobroController::class,"update"]);
 Route::delete("forma_cobro/delete/{id}",[Forma_cobroController::class,"destroy"]);
 Route::post("forma_cobro/search",[Forma_cobroController::class, 'buscar']);
+Route::get("forma_cobro/listarFormasCobro", [Forma_cobroController::class, "listarFormasCobro"]);
 
 Route::get("caja/read",[CajaController::class,"read"]);
 Route::post("caja/create",[CajaController::class,"store"]);
@@ -228,6 +236,18 @@ Route::put("clientes/update/{id}",[ClientesController::class,"update"]);
 Route::delete("clientes/delete/{id}",[ClientesController::class,"destroy"]);
 Route::post("clientes/buscar",[ClientesController::class, 'buscar']);
 Route::post("clientes/buscarClient",[ClientesController::class, 'buscarClient']);
+
+Route::get("titular/read",[TitularesController::class,"read"]);
+Route::post("titular/create",[TitularesController::class,"store"]);
+Route::put("titular/update/{id}",[TitularesController::class,"update"]);
+Route::delete("titular/delete/{id}",[TitularesController::class,"destroy"]);
+Route::post("titular/buscar",[TitularesController::class, 'buscar']);
+
+Route::get("cta_bancaria/read",[Ctas_bancariasController::class,"read"]);
+Route::post("cta_bancaria/create",[Ctas_bancariasController::class,"store"]);
+Route::put("cta_bancaria/update/{id}",[Ctas_bancariasController::class,"update"]);
+Route::delete("cta_bancaria/delete/{id}",[Ctas_bancariasController::class,"destroy"]);
+Route::post("cta_bancaria/buscar",[Ctas_bancariasController::class, 'buscar']);
 
 Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
 Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
@@ -394,9 +414,9 @@ Route::put("cobros_cab/confirmar/{id}", [Cobros_cabController::class, "confirmar
 Route::get('cobros_cab/total_cheques_apertura', [Cobros_cabController::class, 'totalChequesApertura']);
 Route::get('cobros_cab/total_tarjetas_apertura', [Cobros_cabController::class, 'totalTarjetasApertura']);
 
-Route::get("cobros_det/read/{cobro_id}", [CobrosDetController::class, "read"]);
-Route::post("cobros_det/create", [CobrosDetController::class, "store"]);
-Route::delete("cobros_det/delete",[CobrosDetController::class, "destroy"]);
+Route::get("cobros_det/read/{cobro_id}", [Cobros_detController::class, "read"]);
+Route::post("cobros_det/create", [Cobros_detController::class, "store"]);
+Route::delete("cobros_det/delete",[Cobros_detController::class, "destroy"]);
 Route::post("cobros_det/buscarCtaCobro", [Cobros_detController::class, "buscarCtaCobro"]);
 
 Route::get("cobros_tarjetas/read/{cobro_id}", [Cobros_tarjetasController::class, "read"]);
@@ -406,6 +426,36 @@ Route::delete("cobros_tarjetas/delete", [Cobros_tarjetasController::class, "dest
 Route::get("cobros_cheques/read/{cobro_id}", [Cobros_chequesController::class, "read"]);
 Route::post("cobros_cheques/create", [Cobros_chequesController::class, "store"]);
 Route::delete("cobros_cheques/delete", [Cobros_chequesController::class, "destroy"]);
+
+Route::get("facturas_varias_cab/read",[Facturas_varias_cabController::class,"read"]);
+Route::post("facturas_varias_cab/create",[Facturas_varias_cabController::class,"store"]);
+Route::put("facturas_varias_cab/update/{id}",[Facturas_varias_cabController::class,"update"]);
+Route::put("facturas_varias_cab/anular/{id}",[Facturas_varias_cabController::class,"anular"]);
+Route::put("facturas_varias_cab/confirmar/{id}",[Facturas_varias_cabController::class,"confirmar"]);
+//Route::post("facturas_varias_cab/buscar",[Facturas_varias_cabController::class,"buscar"]);
+
+Route::get("facturas_varias_det/read/{id}",[Facturas_varias_detController::class,"read"]);
+Route::post("facturas_varias_det/create",[Facturas_varias_detController::class,"store"]);
+Route::put("facturas_varias_det/update/{factura_varia_id}/{rubro_id}",[Facturas_varias_detController::class,"update"]);
+Route::delete("facturas_varias_det/delete/{factura_varia_id}/{rubro_id}",[Facturas_varias_detController::class,"destroy"]);
+
+Route::get("orden_pago_cab/read",[Orden_pago_cabController::class,"read"]);
+Route::post("orden_pago_cab/create",[Orden_pago_cabController::class,"store"]);
+Route::put("orden_pago_cab/update/{id}",[Orden_pago_cabController::class,"update"]);
+Route::put("orden_pago_cab/anular/{id}",[Orden_pago_cabController::class,"anular"]);
+Route::put("orden_pago_cab/confirmar/{id}",[Orden_pago_cabController::class,"confirmar"]);
+Route::put("orden_pago_cab/rechazar/{id}",[Orden_pago_cabController::class,"rechazar"]);
+Route::put("orden_pago_cab/aprobar/{id}",[Orden_pago_cabController::class,"aprobar"]);
+Route::post("orden_pago_cab/buscar",[Orden_pago_cabController::class,"buscar"]);
+Route::post("orden_pago_cab/buscarCuotasPendientesProveedor",[Orden_pago_cabController::class,"buscarCuotasPendientesProveedor"]);
+
+Route::get("orden_pago_det/read/{orden_pago_id}",[Orden_pago_detController::class, "read"]);
+Route::post("orden_pago_det/create",[Orden_pago_detController::class, "store"]);
+Route::delete("orden_pago_det/delete/{orden_pago_id}/{ctas_pagar_id}/{compra_id}",[Orden_pago_detController::class, "destroy"]);
+
+Route::get("orden_pago_det_fact_var/read/{orden_pago_id}", [Orden_pago_det_fact_varController::class, "read"]);
+Route::post("orden_pago_det_fact_var/create", [Orden_pago_det_fact_varController::class, "store"]);
+Route::delete("orden_pago_det_fact_var/delete/{orden_pago_id}/{ctas_pagar_fact_varias_id}",[Orden_pago_det_fact_varController::class, "destroy"]);
 
 Route::get("perfiles/read", [PerfilController::class,"read"]);
 Route::post("perfiles/create", [PerfilController::class,"store"]);

@@ -18,7 +18,7 @@ class Ctas_cobrar extends Model
         'ctas_cob_estado',
         'tipo_fact_id'
     ];
-    protected $primaryKey = ['id','compra_id'];
+    protected $primaryKey = ['id','venta_id'];
     public $incrementing = false;
     protected $table = 'ctas_cobrar';
 }

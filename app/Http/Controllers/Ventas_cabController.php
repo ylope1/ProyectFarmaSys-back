@@ -225,165 +225,184 @@ class Ventas_cabController extends Controller
 
     public function confirmar(Request $r, $id)
     {
-        $venta = Ventas_cab::find($id);
+        DB::beginTransaction();
 
-        if (!$venta) {
-            return response()->json(['error' => 'Venta no encontrada'], 404);
-        }
+        try {
 
-        // Validar que no esté ya confirmada
-        if ($venta->venta_estado === 'CONFIRMADO') {
-            return response()->json(['error' => 'Esta venta ya fue confirmada anteriormente'], 400);
-        }
+            $venta = Ventas_cab::find($id);
 
-        // Marcar venta como CONFIRMADO
-        $venta->venta_estado = 'CONFIRMADO';
-        $venta->save();
-
-        // Obtener detalles de ventas
-        $detalles = Ventas_det::where('venta_id', $id)->get();
-
-        // Inicializar acumuladores de totales
-        $monto_grav_5 = 0;
-        $monto_grav_10 = 0;
-        $monto_iva_5 = 0;
-        $monto_iva_10 = 0;
-        $monto_exentas = 0;
-
-        foreach ($detalles as $det) {
-        $producto = DB::table('productos as p')
-        ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
-        ->where('p.id', $det->producto_id)
-        ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
-        ->first();
-
-        $subtotal = $det->venta_cant * $det->venta_precio;
-
-        if ($producto) {
-            switch ($producto->tipo_imp_id) {
-                case 2: // 5% IVA
-                    $base5 = $subtotal / 1.05;
-                    $iva5 = $subtotal - $base5;
-                    $monto_grav_5 += $base5;
-                    $monto_iva_5 += $iva5;
-                    break;
-                case 1: // 10% IVA
-                    $base10 = $subtotal / 1.10;
-                    $iva10 = $subtotal - $base10;
-                    $monto_grav_10 += $base10;
-                    $monto_iva_10 += $iva10;
-                    break;
-                case 3: // Exentas
-                default:
-                    $monto_exentas += $subtotal;
-                    break;
+            if (!$venta) {
+                return response()->json(['error' => 'Venta no encontrada'], 404);
             }
-        }
 
-            // Buscar stock existente
-            $stock = Stock::where('deposito_id', $venta->deposito_id)
-                        ->where('sucursal_id', $venta->sucursal_id)
-                        ->where('producto_id', $producto->id)
-                        ->first();
+            if ($venta->venta_estado === 'CONFIRMADO') {
+                return response()->json(['error' => 'Esta venta ya fue confirmada anteriormente'], 400);
+            }
 
-            if ($stock) {
-                $nuevoTotal = $stock->stock_cant_exist - $det->venta_cant;
+            //CONFIRMAR VENTA
+            $venta->venta_estado = 'CONFIRMADO';
+            $venta->save();
 
-                if ($nuevoTotal < $stock->stock_cant_min) {
-                    $faltante = $stock->stock_cant_min - $nuevoTotal;
+            $detalles = Ventas_det::where('venta_id', $id)->get();
 
-                    $stock->stock_cant_exist = $stock->stock_cant_min;
-                    $stock->cantidad_exceso += $faltante;
-                    $stock->fecha_movimiento =  $venta->venta_fec; 
-                    $stock->motivo = 'STOCK MINIMO DE PRODUCTO PARA VENTA';
-                    $stock->save();
+            $monto_grav_5  = 0;
+            $monto_grav_10 = 0;
+            $monto_iva_5   = 0;
+            $monto_iva_10  = 0;
+            $monto_exentas = 0;
 
-                } else {
-                    $stock->stock_cant_exist = $nuevoTotal;
-                    $stock->fecha_movimiento =  $venta->venta_fec;
+            foreach ($detalles as $det) {
+
+                $producto = DB::table('productos as p')
+                    ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+                    ->where('p.id', $det->producto_id)
+                    ->select('p.*', 'ti.id as tipo_imp_id')
+                    ->first();
+
+                $subtotal = $det->venta_cant * $det->venta_precio;
+
+                switch ($producto->tipo_imp_id) {
+                    case 2: // IVA 5%
+                        $base5 = $subtotal / 1.05;
+                        $monto_grav_5 += $base5;
+                        $monto_iva_5  += ($subtotal - $base5);
+                        break;
+
+                    case 1: // IVA 10%
+                        $base10 = $subtotal / 1.10;
+                        $monto_grav_10 += $base10;
+                        $monto_iva_10  += ($subtotal - $base10);
+                        break;
+
+                    default: // Exentas
+                        $monto_exentas += $subtotal;
+                        break;
+                }
+
+                //ACTUALIZAR STOCK
+                $stock = Stock::where('deposito_id', $venta->deposito_id)
+                    ->where('sucursal_id', $venta->sucursal_id)
+                    ->where('producto_id', $producto->id)
+                    ->first();
+
+                if ($stock) {
+                    $stock->stock_cant_exist -= $det->venta_cant;
+                    $stock->fecha_movimiento = $venta->venta_fec;
                     $stock->motivo = 'SALIDA VENTA';
                     $stock->save();
                 }
-            } else {
-                // Crear nuevo stock
-                Stock::create([
-                    'deposito_id' => $venta->deposito_id,
-                    'sucursal_id' => $venta->sucursal_id,
-                    'producto_id' => $producto->id,
-                    'stock_cant_exist' => $det->venta_cant,
-                    'stock_cant_min' => 0,
-                    'stock_cant_max' => 100,
-                    'cantidad_exceso' => 0,
-                    'fecha_movimiento' =>  $venta->venta_fec,
-                    'motivo' => 'SALIDA VENTA'
-                ]);
             }
-        }
 
-            // Guardar totales en cabecera
-            $venta->monto_grav_5 = $monto_grav_5;
-            $venta->monto_iva_5 = $monto_iva_5;
+            //TOTALES EN CABECERA
+            $venta->monto_grav_5  = $monto_grav_5;
+            $venta->monto_iva_5   = $monto_iva_5;
             $venta->monto_grav_10 = $monto_grav_10;
-            $venta->monto_iva_10 = $monto_iva_10;
+            $venta->monto_iva_10  = $monto_iva_10;
             $venta->monto_exentas = $monto_exentas;
-            $venta->monto_general = $monto_grav_5 + $monto_iva_5 + $monto_grav_10 + $monto_iva_10 + $monto_exentas;
+            $venta->monto_general = $monto_grav_5 + $monto_iva_5 +$monto_grav_10 + $monto_iva_10 +$monto_exentas;
+
             $venta->save();
 
-            // Si es crédito, generar cuentas a cobrar
-            if ((int) $venta->tipo_fact_id === 7) { // 7 = crédito
-                $cuotas = $venta->venta_cant_cta ?? 1;
-                $montoPorCuota = $venta->monto_general / $cuotas;
-                $intervalo = $venta->venta_ifv ?? 30;
+            //GENERAR CUENTAS A COBRAR
+
+            if (Ctas_cobrar::where('venta_id', $venta->id)->exists()) {
+                throw new \Exception('La venta ya tiene cuentas a cobrar generadas');
+            }
+
+            // CONTADO (tipo_fact_id = 6)
+            if ((int) $venta->tipo_fact_id === 6) {
+                $idCta = $this->siguienteIdCtaCobrar($venta->id);
+                Ctas_cobrar::create([
+                    'id'                 => $idCta,
+                    'venta_id'           => $venta->id,
+                    'ctas_cob_monto'     => $venta->monto_general,
+                    'ctas_cob_saldo'     => $venta->monto_general,
+                    'ctas_cob_fec_vto'   => $venta->venta_fec, 
+                    'ctas_cob_nro_cuota' => 1,
+                    'ctas_cob_estado'    => 'PENDIENTE',
+                    'tipo_fact_id'       => $venta->tipo_fact_id
+                ]);
+            }
+
+            // CRÉDITO (tipo_fact_id = 7)
+            if ((int) $venta->tipo_fact_id === 7) {
+
+                $cuotas     = max(1, (int) $venta->venta_cant_cta);
+                $intervalo  = max(1, (int) $venta->venta_ifv);
+                $montoCuota = round($venta->monto_general / $cuotas, 2);
 
                 for ($i = 1; $i <= $cuotas; $i++) {
+
+                    $idCta = $this->siguienteIdCtaCobrar($venta->id);
+
                     Ctas_cobrar::create([
-                        'id' => $i,
-                        'venta_id' => $venta->id,
-                        'ctas_cob_monto' => $montoPorCuota,
-                        'ctas_cob_saldo' => $montoPorCuota, 
-                        'ctas_cob_fec_vto' => now()->addDays($intervalo * $i),
+                        'id'                 => $idCta,
+                        'venta_id'           => $venta->id,
+                        'ctas_cob_monto'     => $montoCuota,
+                        'ctas_cob_saldo'     => $montoCuota,
+                        'ctas_cob_fec_vto'   => now()->addDays($intervalo * $i),
                         'ctas_cob_nro_cuota' => $i,
-                        'ctas_cob_estado' => 'Pendiente',
-                        'tipo_fact_id' => $venta->tipo_fact_id
+                        'ctas_cob_estado'    => 'PENDIENTE',
+                        'tipo_fact_id'       => $venta->tipo_fact_id
                     ]);
                 }
             }
 
-            // Registrar en Libro de Ventas
+            //LIBRO DE VENTAS
             $primerDetalle = $detalles->first();
             $producto = DB::table('productos as p')
                 ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
                 ->where('p.id', $primerDetalle->producto_id)
                 ->select('p.*', 'ti.id as tipo_imp_id', 'ti.impuesto_desc as tipo_imp_desc')
                 ->first();
-            $clientes = Clientes::find($venta->cliente_id);
+            $cliente = Clientes::find($venta->cliente_id);
 
             Libro_Ventas::create([
-            'venta_id' => $venta->id,
-            'lib_vent_fecha' => $venta->venta_fec,
-            'cli_ruc' => $clientes->cli_ruc ?? '', 
-            'lib_vent_tipo_doc' => 'FACTURA',
-            'lib_vent_nro_doc' => $venta->venta_fact,
-            'lib_vent_monto' => $venta->monto_general,
-            'lib_vent_grav_10' => $venta->monto_grav_10,
-            'lib_vent_iva_10' => $venta->monto_iva_10,
-            'lib_vent_grav_5' => $venta->monto_grav_5,
-            'lib_vent_iva_5' => $venta->monto_iva_5,
-            'lib_vent_exentas' => $venta->monto_exentas,
-            'cliente_id' => $clientes->id,
-            'cliente_nombre' => $clientes->nombre_cliente ?? '',
-            'impuesto_id' => $producto->tipo_imp_id ?? null, 
-            'impuesto_desc' => $producto->tipo_imp_desc ?? '', 
-        ]);
+                'venta_id'          => $venta->id,
+                'lib_vent_fecha'    => $venta->venta_fec,
+                'cli_ruc'           => $cliente->cli_ruc ?? '',
+                'lib_vent_tipo_doc' => 'FACTURA',
+                'lib_vent_nro_doc'  => $venta->venta_fact,
+                'lib_vent_monto'    => $venta->monto_general,
+                'lib_vent_grav_10'  => $venta->monto_grav_10,
+                'lib_vent_iva_10'   => $venta->monto_iva_10,
+                'lib_vent_grav_5'   => $venta->monto_grav_5,
+                'lib_vent_iva_5'    => $venta->monto_iva_5,
+                'lib_vent_exentas'  => $venta->monto_exentas,
+                'cliente_id'        => $cliente->id,
+                'cliente_nombre'    => $cliente->nombre_cliente ?? '',
+                'impuesto_id' => $producto->tipo_imp_id ?? null, 
+                'impuesto_desc' => $producto->tipo_imp_desc ?? '',
+            ]);
 
-        return response()->json([
-            'mensaje' => 'Venta confirmada, stock actualizado, libro ventas y cuenta a cobrar generados correctamente.',
-            'tipo' => 'success',
-            'registro' => $venta
-        ], 200);
+            DB::commit();
+
+            return response()->json([
+                'mensaje' => 'Venta confirmada y cuentas a cobrar generadas correctamente',
+                'tipo'    => 'success',
+                'registro'=> $venta
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'mensaje' => 'Error al confirmar venta',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function buscar(Request $r){
+    private function siguienteIdCtaCobrar($ventaId)
+    {
+        return (int) DB::table('ctas_cobrar')
+            ->where('venta_id', $ventaId)
+            ->max('id') + 1;
+    }
+
+    public function buscar(Request $r)
+    {
         return DB::select("SELECT 
             vc.id,
             to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') AS venta_fec,
@@ -408,50 +427,51 @@ class Ventas_cabController extends Controller
         ", [$r->user_id, '%' . $r->name . '%']);
     }
 
-    public function buscarVentFactSuc(Request $r){
-    $query = "SELECT 
-        vc.id,
-        to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') AS venta_fec,
-        vc.venta_estado,
-        vc.venta_fact,  -- Número de factura
-        vc.empresa_id,  
-        e.empresa_desc,
-        vc.sucursal_id, 
-        s.suc_desc,
-        vc.user_id, 
-        u.name AS vendedor,
-        vc.id as venta_id,
-        'VENTA NRO:' || to_char(vc.id, '0000000') || 
-        ' FECHA: ' || to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') || 
-        ' (' || vc.venta_estado || ')' AS venta,
-        'FACTURA: ' || vc.venta_fact AS venta_fact
-    FROM ventas_cab vc 
-    JOIN empresas e ON e.id = vc.empresa_id
-    JOIN sucursales s ON s.id = vc.sucursal_id 
-    JOIN users u ON u.id = vc.user_id 
-    WHERE vc.venta_estado = 'CONFIRMADO'";
-    
-    $params = [];
-    
-    // FILTRO OBLIGATORIO por sucursal (seguridad multi-sucursal)
-    if ($r->has('sucursal_id') && !empty($r->sucursal_id)) {
-        $query .= " AND vc.sucursal_id = ?";
-        $params[] = $r->sucursal_id;
-    } else {
-        // Opción 1: Devolver error
-        return response()->json([
-            'error' => true,
-            'mensaje' => 'Se requiere el parámetro sucursal_id'
-        ], 400);
+    public function buscarVentFactSuc(Request $r)
+    {
+        $query = "SELECT 
+            vc.id,
+            to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') AS venta_fec,
+            vc.venta_estado,
+            vc.venta_fact,  -- Número de factura
+            vc.empresa_id,  
+            e.empresa_desc,
+            vc.sucursal_id, 
+            s.suc_desc,
+            vc.user_id, 
+            u.name AS vendedor,
+            vc.id as venta_id,
+            'VENTA NRO:' || to_char(vc.id, '0000000') || 
+            ' FECHA: ' || to_char(vc.venta_fec, 'dd/mm/yyyy HH24:mi:ss') || 
+            ' (' || vc.venta_estado || ')' AS venta,
+            'FACTURA: ' || vc.venta_fact AS venta_fact
+        FROM ventas_cab vc 
+        JOIN empresas e ON e.id = vc.empresa_id
+        JOIN sucursales s ON s.id = vc.sucursal_id 
+        JOIN users u ON u.id = vc.user_id 
+        WHERE vc.venta_estado = 'CONFIRMADO'";
+        
+        $params = [];
+        
+        // FILTRO OBLIGATORIO por sucursal (seguridad multi-sucursal)
+        if ($r->has('sucursal_id') && !empty($r->sucursal_id)) {
+            $query .= " AND vc.sucursal_id = ?";
+            $params[] = $r->sucursal_id;
+        } else {
+            // Opción 1: Devolver error
+            return response()->json([
+                'error' => true,
+                'mensaje' => 'Se requiere el parámetro sucursal_id'
+            ], 400);
+        }
+        
+        // Filtro opcional por número de factura
+        if ($r->has('venta_fact') && !empty($r->venta_fact)) {
+            $query .= " AND vc.venta_fact ILIKE ?";
+            $params[] = '%' . $r->venta_fact . '%';
+        }
+        // Ordenar por fecha descendente (más recientes primero)
+        $query .= " ORDER BY vc.venta_fec DESC";
+        return DB::select($query, $params);
     }
-    
-    // Filtro opcional por número de factura
-    if ($r->has('venta_fact') && !empty($r->venta_fact)) {
-        $query .= " AND vc.venta_fact ILIKE ?";
-        $params[] = '%' . $r->venta_fact . '%';
-    }
-    // Ordenar por fecha descendente (más recientes primero)
-    $query .= " ORDER BY vc.venta_fec DESC";
-    return DB::select($query, $params);
-}
 }

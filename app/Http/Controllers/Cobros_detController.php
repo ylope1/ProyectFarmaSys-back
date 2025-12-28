@@ -16,11 +16,28 @@ class Cobros_detController extends Controller
                 cd.cobro_id,
                 cd.cta_cobrar_id,
                 cd.cta_cobrar_venta_id,
+
+                -- Documento
+                v.venta_fact as documento,
+
+                -- Cliente
+                p.pers_nombre || ' ' || p.pers_apellido as cliente,
+
+                -- Forma de cobro
                 cd.forma_cobro_id,
-                fc.forma_cob_desc,
-                cd.monto_cobro
+                fc.forma_cob_desc as forma_cobro_desc,
+
+                -- Monto
+                cd.monto_cobro as monto
             from cobros_det cd
-            join forma_cobros fc on fc.id = cd.forma_cobro_id
+            join forma_cobros fc 
+                on fc.id = cd.forma_cobro_id
+            join ventas_cab v
+                on v.id = cd.cta_cobrar_venta_id
+            join clientes cl
+                on cl.id = v.cliente_id
+            join personas p
+                on p.id = cl.persona_id
             where cd.cobro_id = ?
             order by cd.forma_cobro_id
         ", [$cobro_id]);

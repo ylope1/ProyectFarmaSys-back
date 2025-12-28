@@ -63,4 +63,12 @@ class Forma_cobroController extends Controller
         from forma_cobros fc 
         where fc.forma_cob_desc ilike '%$request->forma_cob_desc%';");
     }
+
+    public function listarFormasCobro(){
+        return DB::select("
+            select id as forma_cobro_id, forma_cob_desc
+            from forma_cobros
+            order by forma_cob_desc
+        ");
+    }
 }

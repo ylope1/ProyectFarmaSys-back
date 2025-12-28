@@ -223,12 +223,17 @@ class Cobros_cabController extends Controller
                 // Actualizar saldo
                 $nuevoSaldo = $cta->ctas_cob_saldo - $det->monto_cobro;
 
+                $estadoCta = ($nuevoSaldo <= 0) ? 'CANCELADO' : 'PENDIENTE';
+
+
+
                 DB::update("
                     update ctas_cobrar
-                    set ctas_cob_saldo = ?
+                    set ctas_cob_saldo = ?,
+                        ctas_cob_estado = ?
                     where id = ?
                     and venta_id = ?
-                ", [$nuevoSaldo, $cta->id, $cta->venta_id]);
+                ", [$nuevoSaldo, $estadoCta, $cta->id, $cta->venta_id]);
 
                 // Impactar caja SOLO si es efectivo
                 if ($det->forma_cobro_id == 2) { // 2 = EFECTIVO
@@ -259,6 +264,23 @@ class Cobros_cabController extends Controller
                 // NO se impacta caja aquí
             }
 
+             /* ---- Verificar si la venta ya quedó sin saldo ---- */
+            $saldoPendiente = DB::selectOne("
+                select count(*) as cantidad
+                from ctas_cobrar
+                where venta_id = ?
+                  and ctas_cob_saldo > 0
+            ", [$cta->venta_id]);
+
+            if ($saldoPendiente->cantidad == 0) 
+            {
+                DB::update("
+                    update ventas_cab
+                    set venta_estado = 'PROCESADO'
+                    where id = ?
+                ", [$cta->venta_id]);
+            }
+            
             // Confirmar cabecera
             DB::update("
                 update cobros_cab
@@ -270,7 +292,8 @@ class Cobros_cabController extends Controller
 
             return response()->json([
                 'mensaje' => 'Cobro confirmado con éxito',
-                'tipo'    => 'success'
+                'tipo'    => 'success',
+                'registro' => $id
             ], 200);
 
         } catch (\Exception $e) {
