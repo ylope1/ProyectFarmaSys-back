@@ -32,6 +32,7 @@ use App\Http\Controllers\Entidades_adheridasController;
 use App\Http\Controllers\Entidades_adheridas_tarjetasController;
 use App\Http\Controllers\TitularesController;
 use App\Http\Controllers\Cta_bancariasController;
+use App\Http\Controllers\Cta_titularController;
 use App\Http\Controllers\Pedido_comp_cabController;
 use App\Http\Controllers\Pedido_comp_detController;
 use App\Http\Controllers\Presup_comp_cabController;
@@ -65,6 +66,9 @@ use App\Http\Controllers\Facturas_varias_detController;
 use App\Http\Controllers\Orden_pago_cabController;
 use App\Http\Controllers\Orden_pago_detController;
 use App\Http\Controllers\Orden_pago_det_fact_varController;
+use App\Http\Controllers\Mov_bancariosController;
+use App\Http\Controllers\Pago_chequesController;
+use App\Http\Controllers\Asignacion_fondo_fijoController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -243,11 +247,16 @@ Route::put("titular/update/{id}",[TitularesController::class,"update"]);
 Route::delete("titular/delete/{id}",[TitularesController::class,"destroy"]);
 Route::post("titular/buscar",[TitularesController::class, 'buscar']);
 
-Route::get("cta_bancaria/read",[Ctas_bancariasController::class,"read"]);
-Route::post("cta_bancaria/create",[Ctas_bancariasController::class,"store"]);
-Route::put("cta_bancaria/update/{id}",[Ctas_bancariasController::class,"update"]);
-Route::delete("cta_bancaria/delete/{id}",[Ctas_bancariasController::class,"destroy"]);
-Route::post("cta_bancaria/buscar",[Ctas_bancariasController::class, 'buscar']);
+Route::get("cta_bancaria/read",[Cta_bancariasController::class,"read"]);
+Route::post("cta_bancaria/create",[Cta_bancariasController::class,"store"]);
+Route::put("cta_bancaria/update/{id}",[Cta_bancariasController::class,"update"]);
+Route::delete("cta_bancaria/delete/{id}",[Cta_bancariasController::class,"destroy"]);
+Route::post("cta_bancaria/buscar",[Cta_bancariasController::class, 'buscar']);
+
+Route::get("cta_titular/read", [Cta_titularController::class, "read"]);
+Route::post("cta_titular/create", [Cta_titularController::class, "store"]);
+Route::delete("cta_titular/delete/{id}", [Cta_titularController::class, "destroy"]);
+Route::post("cta_titular/buscar", [Cta_titularController::class, "buscar"]);
 
 Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
 Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
@@ -456,6 +465,26 @@ Route::delete("orden_pago_det/delete/{orden_pago_id}/{ctas_pagar_id}/{compra_id}
 Route::get("orden_pago_det_fact_var/read/{orden_pago_id}", [Orden_pago_det_fact_varController::class, "read"]);
 Route::post("orden_pago_det_fact_var/create", [Orden_pago_det_fact_varController::class, "store"]);
 Route::delete("orden_pago_det_fact_var/delete/{orden_pago_id}/{ctas_pagar_fact_varias_id}",[Orden_pago_det_fact_varController::class, "destroy"]);
+
+Route::get('mov_bancarios/read',[Mov_bancariosController::class, 'read']);
+Route::post('mov_bancarios/create',[Mov_bancariosController::class, 'store']);
+Route::put('mov_bancarios/update/{id}',[Mov_bancariosController::class, 'update']);
+Route::put('mov_bancarios/anular/{id}',[Mov_bancariosController::class, 'anular']);
+Route::put('mov_bancarios/confirmar/{id}',[Mov_bancariosController::class, 'confirmar']);
+Route::post('mov_bancarios/buscar',[Mov_bancariosController::class, 'buscar']);
+
+Route::get('pago_cheques/read',[Pago_chequesController::class, 'read']);
+Route::post('pago_cheques/create',[Pago_chequesController::class, 'store']);
+Route::put("pago_cheques/confirmar/{orden_pago_id}/{mov_bancario_id}", [Pago_chequesController::class, "confirmar"]);
+Route::put('pago_cheques/anular/{orden_pago_id}/{mov_bancario_id}',[Pago_chequesController::class, 'anular']);
+Route::post('pago_cheques/buscar',[Pago_chequesController::class, 'buscar']);
+
+Route::get("asignacion_fondo_fijo/read", [Asignacion_fondo_fijoController::class, "read"]);
+Route::post("asignacion_fondo_fijo/create", [Asignacion_fondo_fijoController::class, "store"]);
+Route::put("asignacion_fondo_fijo/confirmar/{id}", [Asignacion_fondo_fijoController::class, "confirmar"]);
+Route::put("asignacion_fondo_fijo/inactivar/{id}", [Asignacion_fondo_fijoController::class, "inactivar"]);
+Route::put("asignacion_fondo_fijo/activar/{id}", [Asignacion_fondo_fijoController::class, "activar"]);
+Route::put("asignacion_fondo_fijo/cerrar/{id}", [Asignacion_fondo_fijoController::class, "cerrar"]);
 
 Route::get("perfiles/read", [PerfilController::class,"read"]);
 Route::post("perfiles/create", [PerfilController::class,"store"]);

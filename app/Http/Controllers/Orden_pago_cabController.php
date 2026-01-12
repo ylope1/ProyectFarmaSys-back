@@ -212,7 +212,6 @@ class Orden_pago_cabController extends Controller
         ], 200);
     }
  
-
     public function buscar(Request $r)
     {
         return DB::select("
@@ -220,15 +219,46 @@ class Orden_pago_cabController extends Controller
                 opc.id,
                 opc.orden_pago_estado,
                 to_char(opc.orden_pago_fec_aprob, 'dd/mm/yyyy') as fecha_aprob,
+
+                opc.empresa_id,
+                e.empresa_desc,
+
+                opc.sucursal_id,
+                s.suc_desc,
+
+                opc.proveedor_id,
                 p.proveedor_desc,
+
+                -- TOTAL A PAGAR (SUMA DE SALDOS)
+                COALESCE((
+                    SELECT SUM(d.op_saldo)
+                    FROM orden_pago_det d
+                    WHERE d.orden_pago_id = opc.id
+                ),0)
+                +
+                COALESCE((
+                    SELECT SUM(df.op_saldo)
+                    FROM orden_pago_det_fact_var df
+                    WHERE df.orden_pago_id = opc.id
+                ),0) AS total_pagar,
+
                 'ORDEN PAGO NRO: ' || to_char(opc.id, '0000000') ||
-                ' (' || opc.orden_pago_estado || ')' as orden
+                ' (' || opc.orden_pago_estado || ')' AS orden
+
             FROM orden_pago_cab opc
             JOIN proveedores p ON p.id = opc.proveedor_id
+            JOIN empresas e ON e.id = opc.empresa_id
+            JOIN sucursales s ON s.id = opc.sucursal_id
+
             WHERE opc.orden_pago_estado = 'CONFIRMADO'
-              AND opc.user_id = {$r->user_id}
-              AND p.proveedor_desc ILIKE '%{$r->proveedor}%'
-        ");
+            AND opc.user_id = ?
+            AND p.proveedor_desc ILIKE ?
+
+            ORDER BY opc.id DESC
+        ", [
+            $r->user_id,
+            '%' . $r->proveedor . '%'
+        ]);
     }
 
     public function buscarCuotasPendientesProveedor(Request $request)

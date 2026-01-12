@@ -87,26 +87,30 @@ class Cta_titularController extends Controller
     {
         $condiciones = "";
 
-        if ($r->cta_bancaria_id) {
-            $condiciones .= " and ct.cta_bancaria_id = $r->cta_bancaria_id";
+        if ($r->texto) {
+            $texto = strtoupper($r->texto);
+            $condiciones .= "
+                and (
+                    cb.cta_banc_banco ILIKE '%$texto%' or
+                    cb.cta_banc_nro_cuenta ILIKE '%$texto%' or
+                    t.tit_nombre ILIKE '%$texto%' or
+                    t.tit_apellido ILIKE '%$texto%'
+                )
+            ";
         }
 
-        if ($r->titular_id) {
-            $condiciones .= " and ct.titular_id = $r->titular_id";
-        }
-
-        if ($r->estado) {
-            $condiciones .= " and ct.estado = '$r->estado'";
-        }
+        // Solo cuentas activas y titulares activos
+        $condiciones .= " and ct.estado = 'ACTIVO'";
 
         return DB::select("
             select
                 ct.cta_bancaria_id,
-                cb.cta_banc_banco,
-                cb.cta_banc_nro_cuenta,
                 ct.titular_id,
-                t.tit_nombre,
-                t.tit_apellido,
+
+                -- texto para el front
+                cb.cta_banc_banco || ' - ' || cb.cta_banc_nro_cuenta as cta_banc_desc,
+                t.tit_nombre || ' ' || t.tit_apellido as titular_desc,
+
                 ct.rol,
                 ct.firma_habilitada,
                 ct.estado
