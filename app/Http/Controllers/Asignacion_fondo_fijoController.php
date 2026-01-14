@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Asignacion_fondo_fijo;
+use App\Models\Ctas_pagar_fondo_fijo;
 
 class Asignacion_fondo_fijoController extends Controller
 {
@@ -88,7 +89,7 @@ class Asignacion_fondo_fijoController extends Controller
                 'rendicion_ff_id'         => null,
                 'ctas_pagar_ff_monto'     => $asignacion->asignacion_ff_monto,
                 'ctas_pagar_ff_saldo'     => $asignacion->asignacion_ff_monto,
-                'ctas_pagar_ff_fec_vto'   => $asignacion->asignacion_ff_fec_vto,
+                'ctas_pagar_ff_fec_vto'   => $asignacion->asignacion_ff_fecha,
                 'ctas_pagar_ff_nro_cuota' => 1,
                 'ctas_pagar_ff_estado'    => 'PENDIENTE',
                 'ctas_pagar_ff_tipo'      => 'PROVISION'
@@ -102,7 +103,8 @@ class Asignacion_fondo_fijoController extends Controller
 
             return response()->json([
                 'mensaje' => 'Fondo fijo activado y cuenta a pagar generada.',
-                'tipo' => 'success'
+                'tipo' => 'success',
+                'registro' => $asignacion
             ], 200);
 
         } catch (\Exception $e) {

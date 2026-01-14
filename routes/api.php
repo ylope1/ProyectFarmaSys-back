@@ -486,8 +486,8 @@ Route::put("asignacion_fondo_fijo/inactivar/{id}", [Asignacion_fondo_fijoControl
 Route::put("asignacion_fondo_fijo/activar/{id}", [Asignacion_fondo_fijoController::class, "activar"]);
 Route::put("asignacion_fondo_fijo/cerrar/{id}", [Asignacion_fondo_fijoController::class, "cerrar"]);
 
-Route::get("perfiles/read", [PerfilController::class,"read"]);
-Route::post("perfiles/create", [PerfilController::class,"store"]);
+Route::get("perfil/read", [PerfilController::class,"read"]);
+Route::post("perfil/create", [PerfilController::class,"store"]);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

@@ -22,7 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'login',
-        'intentos'
+        'intentos',
+        'perfil_id'
     ];
 
     /**
@@ -49,5 +50,9 @@ class User extends Authenticatable
     public function funcionario()
     {
         return $this->hasOne(Funcionario::class);
+    }
+    public function perfil()
+    {
+        return $this->belongsTo(Perfil::class, 'perfil_id');
     }
 }

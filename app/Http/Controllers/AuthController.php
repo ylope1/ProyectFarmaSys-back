@@ -20,7 +20,8 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'string|email|max:255|unique:users',
             'password' => 'required|string|min:3',
-            'login' => 'required|string'
+            'login' => 'required|string',
+            'perfil_id' => 'required|exists:perfiles,id'
         ]);
 
         if($validator->fails())
@@ -32,7 +33,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'login' => $request->login
+            'login' => $request->login,
+            'perfil_id' => $request->perfil_id
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
