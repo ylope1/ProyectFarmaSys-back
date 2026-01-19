@@ -186,4 +186,39 @@ class Asignacion_fondo_fijoController extends Controller
         ], 200);
     }
 
+    public function buscar(Request $r)
+    {
+        return DB::select("
+            SELECT
+                aff.id,
+                to_char(aff.asignacion_ff_fecha, 'dd/mm/yyyy HH24:mi:ss') AS asignacion_ff_fecha,
+                aff.asignacion_ff_estado,
+                aff.empresa_id,
+                e.empresa_desc,
+                aff.sucursal_id,
+                s.suc_desc,
+                aff.user_id,
+                u.name AS encargado,
+                aff.proveedor_id,
+                p.proveedor_desc AS responsable,
+                aff.asignacion_ff_monto,
+                aff.id AS asignacion_ff_id,
+                'FONDO FIJO NRO: ' || to_char(aff.id, '0000000') ||
+                ' - RESPONSABLE: ' || p.proveedor_desc ||
+                ' - MONTO: ' || aff.asignacion_ff_monto ||
+                ' (' || aff.asignacion_ff_estado || ')' AS asignacion
+            FROM asignacion_fondo_fijo aff
+            JOIN empresas e   ON e.id = aff.empresa_id
+            JOIN sucursales s ON s.id = aff.sucursal_id
+            JOIN users u      ON u.id = aff.user_id
+            JOIN proveedores p ON p.id = aff.proveedor_id
+            WHERE aff.asignacion_ff_estado = 'ACTIVO'
+            AND aff.user_id = ?
+            AND p.proveedor_desc ILIKE ?
+            ORDER BY aff.id DESC
+        ", [
+            $r->user_id,
+            '%' . $r->name . '%'
+        ]);
+    }
 }

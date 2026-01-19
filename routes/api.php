@@ -69,6 +69,8 @@ use App\Http\Controllers\Orden_pago_det_fact_varController;
 use App\Http\Controllers\Mov_bancariosController;
 use App\Http\Controllers\Pago_chequesController;
 use App\Http\Controllers\Asignacion_fondo_fijoController;
+use App\Http\Controllers\Rendicion_ff_cabController;
+use App\Http\Controllers\Rendicion_ff_detController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AuthController;
 
@@ -485,6 +487,18 @@ Route::put("asignacion_fondo_fijo/confirmar/{id}", [Asignacion_fondo_fijoControl
 Route::put("asignacion_fondo_fijo/inactivar/{id}", [Asignacion_fondo_fijoController::class, "inactivar"]);
 Route::put("asignacion_fondo_fijo/activar/{id}", [Asignacion_fondo_fijoController::class, "activar"]);
 Route::put("asignacion_fondo_fijo/cerrar/{id}", [Asignacion_fondo_fijoController::class, "cerrar"]);
+Route::post("asignacion_fondo_fijo/buscar", [Asignacion_fondo_fijoController::class, "buscar"]);
+
+Route::get("rendicion_ff_cab/read", [Rendicion_ff_cabController::class,"read"]);
+Route::post("rendicion_ff_cab/create", [Rendicion_ff_cabController::class,"store"]);
+Route::put("rendicion_ff_cab/update/{id}", [Rendicion_ff_cabController::class,"update"]);
+Route::put("rendicion_ff_cab/anular/{id}", [Rendicion_ff_cabController::class,"anular"]);
+Route::put("rendicion_ff_cab/confirmar/{id}", [Rendicion_ff_cabController::class,"confirmar"]);
+
+Route::get("rendicion_ff_det/read/{rendicion_ff_id}", [Rendicion_ff_detController::class,"read"]);
+Route::post("rendicion_ff_det/create", [Rendicion_ff_detController::class,"store"]);
+Route::put("rendicion_ff_det/update/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_detController::class,"update"]);
+Route::delete("rendicion_ff_det/delete/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_detController::class,"destroy"]);
 
 Route::get("perfil/read", [PerfilController::class,"read"]);
 Route::post("perfil/create", [PerfilController::class,"store"]);
