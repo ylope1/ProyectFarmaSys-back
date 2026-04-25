@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreign('sucursal_id')->references('id')->on('sucursales')->onUpdate('cascade')->onDelete('restrict');
             $table->decimal('rendicion_ff_monto_gral',14,2); // Monto total rendido
             $table->timestamp('rendicion_ff_fecha');
-            $table->string('rendicion_ff_estado', 15)->default('PENDIENTE'); // PENDIENTE | CONFIRMADA | RECHAZADA
+            $table->string('rendicion_ff_estado', 15)->default('REGISTRADO'); // REGISTRADO | CONFIRMADA | RECHAZADA
             $table->timestamps();
         });
     }

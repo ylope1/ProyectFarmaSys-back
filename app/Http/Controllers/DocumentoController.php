@@ -59,7 +59,7 @@ class DocumentoController extends Controller
     }
     // Función para buscar documentos
      public function buscar(Request $request){
-        return DB::select("select d.id as doc_id, d.*
+        return DB::select("select d.id as documento_id, d.*
         from documentos d  
         where d.documento_desc ilike '%$request->documento_desc%';");
     }

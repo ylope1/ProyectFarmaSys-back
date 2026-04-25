@@ -20,6 +20,10 @@ class Rendicion_ff_cab_Controller extends Controller
                 e.empresa_desc,
                 s.suc_desc,
                 aff.asignacion_ff_monto,
+                'FONDO FIJO NRO: ' || to_char(aff.id, '0000000') ||
+                ' - RESPONSABLE: ' || p.proveedor_desc ||
+                ' - MONTO: ' || aff.asignacion_ff_monto ||
+                ' (' || aff.asignacion_ff_estado || ')' AS asignacion,
                 aff.asignacion_ff_estado
             FROM rendicion_ff_cab rfc
             JOIN asignacion_fondo_fijo aff ON aff.id = rfc.asignacion_ff_id
@@ -38,8 +42,7 @@ class Rendicion_ff_cab_Controller extends Controller
             'user_id'                 => 'required|exists:users,id',
             'empresa_id'              => 'required|exists:empresas,id',
             'sucursal_id'             => 'required|exists:sucursales,id',
-            'rendicion_ff_fecha'      => 'required',
-            'rendicion_ff_monto_gral' => 'required|numeric|min:1'
+            'rendicion_ff_fecha'      => 'required'
         ]);
 
         // Verificar asignación activa
@@ -52,6 +55,7 @@ class Rendicion_ff_cab_Controller extends Controller
             ], 400);
         }
 
+        $datos['rendicion_ff_monto_gral'] = 0;
         $datos['rendicion_ff_estado'] = 'REGISTRADO';
 
         $rendicion = Rendicion_ff_cab::create($datos);

@@ -47,7 +47,8 @@ class Rendicion_ff_det_Controller extends Controller
         if ($existe) {
             return response()->json([
                 'mensaje' => 'Este documento ya fue rendido anteriormente.',
-                'tipo' => 'error'
+                'tipo' => 'error',
+                'registro' => $existe
             ], 400);
         }
 

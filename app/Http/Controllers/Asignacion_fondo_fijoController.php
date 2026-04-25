@@ -218,7 +218,7 @@ class Asignacion_fondo_fijoController extends Controller
             ORDER BY aff.id DESC
         ", [
             $r->user_id,
-            '%' . $r->name . '%'
+            '%' . $r->proveedor_desc . '%'
         ]);
     }
 }
