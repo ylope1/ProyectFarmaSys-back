@@ -14,6 +14,8 @@ class Producto extends Model
         'prod_precio_vent',
         'proveedor_id',
         'item_id',
-        'impuesto_id'
+        'impuesto_id',
+        'marca_id',
+        'prod_estado'
     ];
 }

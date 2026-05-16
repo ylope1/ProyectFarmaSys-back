@@ -112,13 +112,13 @@ Route::get("tipo_imp/read",[Tipo_impuestoController::class,"read"]);
 Route::post("tipo_imp/create",[Tipo_impuestoController::class,"store"]);
 Route::put("tipo_imp/update/{id}",[Tipo_impuestoController::class,"update"]);
 Route::delete("tipo_imp/delete/{id}",[Tipo_impuestoController::class,"destroy"]);
-Route::post("tipo_imp/search", [Tipo_impuestoController::class, 'buscar']);
+Route::post("tipo_imp/buscar", [Tipo_impuestoController::class, 'buscar']);
 
 Route::get("item/read",[ItemController::class,"read"]);
 Route::post("item/create",[ItemController::class,"store"]);
 Route::put("item/update/{id}",[ItemController::class,"update"]);
 Route::delete("item/delete/{id}",[ItemController::class,"destroy"]);
-Route::post("item/search", [ItemController::class, 'buscar']);
+Route::post("item/buscar", [ItemController::class, 'buscar']);
 
 Route::get("proveedore/read",[ProveedoreController::class,"read"]);
 Route::post("proveedore/create",[ProveedoreController::class,"store"]);
@@ -161,7 +161,7 @@ Route::get("marca/read",[MarcaController::class,"read"]);
 Route::post("marca/create",[MarcaController::class,"store"]);
 Route::put("marca/update/{id}",[MarcaController::class,"update"]);
 Route::delete("marca/delete/{id}",[MarcaController::class,"destroy"]);
-Route::post("marca/search", [MarcaController::class, 'buscar']);
+Route::post("marca/buscar", [MarcaController::class, 'buscar']);
 
 Route::get("ajuste_motivo/read",[Ajustes_motivoController::class,"read"]);
 Route::post("ajuste_motivo/create",[Ajustes_motivoController::class,"store"]);

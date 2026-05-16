@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Marca;
+use Illuminate\Support\Facades\DB;
 
 class MarcaController extends Controller
 {
@@ -56,18 +57,10 @@ class MarcaController extends Controller
             'tipo'=>'success'
         ],200);
     }
-    // Función para buscar marcas
-    public function buscar(Request $request){
-        $query = $request->input('marca_desc'); // Obtener el valor de 'marca_desc' del frontend
-        $marca = Marca::where('marca_desc', 'LIKE', "%{$query}%")->get(); // Filtrar marcas por el nombre
-
-        if($marca->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-
-        return response()->json($marca, 200); // Retornar los resultados en formato JSON
+    // Función para buscar productos
+     public function buscar(Request $request){
+        return DB::select("select m.id as marca_id, m.* 
+        from marcas m
+        where m.marca_desc ilike '%$request->marca_desc%';");
     }
 }

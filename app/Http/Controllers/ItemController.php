@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Item;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
@@ -58,15 +59,8 @@ class ItemController extends Controller
     }
     // Función para buscar items
     public function buscar(Request $request){
-        $query = $request->input('item_desc'); // Obtener el valor de 'item_desc' del frontend
-        $item = Item::where('item_desc', 'LIKE', "%{$query}%")->get(); // Filtrar items por el nombre
-
-        if($item->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-        return response()->json($item, 200); // Retornar los resultados en formato JSON
+        return DB::select("select i.id as item_id, i.item_desc 
+        from items i
+        where i.item_desc ilike '%$request->item_desc%';");
     }
 }

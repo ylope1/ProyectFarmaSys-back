@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\DB;
 class ProductoController extends Controller
 {
     public function read(){
-        return DB::select("select prod.*, pr.proveedor_desc, it.item_desc, ti.impuesto_desc
+        return DB::select("select prod.*, pr.proveedor_desc, i.item_desc, ti.impuesto_desc, m.marca_desc
         from productos prod
         join proveedores pr on pr.id = prod.proveedor_id  
-        join items it on it.id = prod.item_id 
-        join tipo_impuestos ti on ti.id = prod.impuesto_id;");
+        join items i on i.id = prod.item_id 
+        join tipo_impuestos ti on ti.id = prod.impuesto_id
+        join marcas m on m.id = prod.marca_id;");
     }
 
     public function store(Request $request){
@@ -23,7 +24,9 @@ class ProductoController extends Controller
             'prod_precio_vent'=>'required',
             'proveedor_id'=>'required',
             'item_id'=>'required',
-            'impuesto_id'=>'required'
+            'impuesto_id'=>'required',
+            'marca_id'=>'required',
+            'prod_estado'=>'required'
         ]);
         $producto = Producto::create($datosValidados);
         $producto->save();
@@ -47,7 +50,9 @@ class ProductoController extends Controller
             'prod_precio_vent'=>'required',
             'proveedor_id'=>'required',
             'item_id'=>'required',
-            'impuesto_id'=>'required'
+            'impuesto_id'=>'required',
+            'marca_id'=>'required',
+            'prod_estado'=>'required'
         ]);
         $producto->update($datosValidados);
         return response()->json([
@@ -65,9 +70,11 @@ class ProductoController extends Controller
                 'tipo'=> 'error'
             ],404);
         }
-        $producto->delete();
+        $producto->update([
+            'prod_estado' => 'INACTIVO'
+        ]);
         return response()->json([
-            'mensaje'=> 'Registro eliminado con exito',
+            'mensaje'=> 'Registro inactivado con exito',
             'tipo'=>'success'
         ],200);
     }
@@ -75,7 +82,9 @@ class ProductoController extends Controller
      public function buscar(Request $request){
         return DB::select("select p.id as producto_id, p.* 
         from productos p
-        where p.prod_desc ilike '%$request->prod_desc%';");
+        WHERE p.prod_desc ILIKE ?
+            AND p.prod_estado = 'ACTIVO'
+        ", ['%' . $request->prod_desc . '%']);
     }
 }
 

@@ -12,20 +12,20 @@ class Presup_comp_cabController extends Controller
 {
     public function read() {
         return DB::select("select 
-        pcc.*,
-        to_char(pcc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec,
-        to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec_aprob,
+        prc.*,
+        to_char(prc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec,
+        to_char(prc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec_aprob,
         p.proveedor_desc,
         e.empresa_desc,
         s.suc_desc,
         u.name,
-        'PEDIDO NRO:' || to_char(pcc.pedido_comp_id, '0000000') || ' FECHA PEDIDO: ' || to_char(pcc2.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || '(' || pcc2.pedido_comp_estado || ')' AS pedido 
-        from presup_comp_cab pcc
-        join proveedores p on p.id = pcc.proveedor_id
-        join empresas e on e.id = pcc.empresa_id 
-        join sucursales s on s.id = pcc.sucursal_id
-        join users u on u.id = pcc.user_id 
-        join pedidos_comp_cab pcc2 on pcc2.id = pcc.pedido_comp_id;");
+        'PEDIDO NRO:' || to_char(prc.pedido_comp_id, '0000000') || ' FECHA PEDIDO: ' || to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || '(' || pcc.pedido_comp_estado || ')' AS pedido 
+        from presup_comp_cab prc
+        join proveedores p on p.id = prc.proveedor_id
+        join empresas e on e.id = prc.empresa_id 
+        join sucursales s on s.id = prc.sucursal_id
+        join users u on u.id = prc.user_id 
+        join pedidos_comp_cab pcc on pcc.id = prc.pedido_comp_id;");
     }
     public function store(Request $request){
         $datosValidados = $request->validate([
@@ -46,10 +46,10 @@ class Presup_comp_cabController extends Controller
         $pedido_comp_cab->save();
 
         $pedido_comp_det = DB::select("select 
-        pd.*,
+        pcd.*,
         p.prod_precio_comp 
-        from pedidos_comp_det pd 
-        join productos p on p.id = pd.producto_id 
+        from pedidos_comp_det pcd 
+        join productos p on p.id = pcd.producto_id 
         where pedido_comp_id = $request->pedido_comp_id;");
 
         foreach($pedido_comp_det as $dp){
@@ -209,15 +209,15 @@ class Presup_comp_cabController extends Controller
     }
     public function buscar(Request $r){
         return DB::select("SELECT 
-            pcc.id,
-            to_char(pcc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec,
-            to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec_aprob,
-            pcc.presup_comp_estado,
-            pcc.empresa_id,  
+            prc.id,
+            to_char(prc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec,
+            to_char(prc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS presup_comp_fec_aprob,
+            prc.presup_comp_estado,
+            prc.empresa_id,  
             e.empresa_desc,
-            pcc.sucursal_id, 
+            prc.sucursal_id, 
             s.suc_desc,
-            pcc.proveedor_id,
+            prc.proveedor_id,
             pr.proveedor_desc,
             pcc.user_id, 
             u.name AS name,
@@ -226,12 +226,12 @@ class Presup_comp_cabController extends Controller
             'PRESUPUESTO NRO:' || to_char(pcc.id, '0000000') || 
             ' FECHA PRESUP APROB: ' || to_char(pcc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
             '(' || pcc.presup_comp_estado || ')' AS presupuesto
-        FROM presup_comp_cab pcc 
-        JOIN empresas e ON e.id = pcc.empresa_id
-        JOIN sucursales s ON s.id = pcc.sucursal_id
-        JOIN proveedores pr ON pr.id = pcc.proveedor_id 
-        JOIN users u ON u.id = pcc.user_id
-        WHERE pcc.presup_comp_estado = 'APROBADO' and pcc.user_id = {$r->user_id};");
+        FROM presup_comp_cab prc 
+        JOIN empresas e ON e.id = prc.empresa_id
+        JOIN sucursales s ON s.id = prc.sucursal_id
+        JOIN proveedores pr ON pr.id = prc.proveedor_id 
+        JOIN users u ON u.id = prc.user_id
+        WHERE prc.presup_comp_estado = 'APROBADO' and prc.user_id = {$r->user_id};");
     }
 }
 

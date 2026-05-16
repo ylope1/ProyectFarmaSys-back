@@ -11,11 +11,11 @@ class Presup_comp_detController extends Controller
 {
     public function read($id){
         return DB::select("select 
-		pcd.*, 
+		prd.*, 
 		p.prod_desc  
-        from presup_comp_det pcd
-        join productos p on p.id = pcd.producto_id
-        where pcd.presup_comp_id = $id;");
+        from presup_comp_det prd
+        join productos p on p.id = prd.producto_id
+        where prd.presup_comp_id = $id;");
     }
     public function store(Request $request){
         $datosValidados = $request->validate([

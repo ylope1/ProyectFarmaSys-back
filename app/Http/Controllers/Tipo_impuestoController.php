@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tipo_impuesto;
+use Illuminate\Support\Facades\DB;
 
 class Tipo_impuestoController extends Controller
 {
@@ -58,15 +59,8 @@ class Tipo_impuestoController extends Controller
     }
     // Función para buscar tipo impuesto
     public function buscar(Request $request){
-        $query = $request->input('impuesto_desc'); // Obtener el valor de 'impuesto_desc' del frontend
-        $tipo_imp = Tipo_impuesto::where('impuesto_desc', 'LIKE', "%{$query}%")->get(); // Filtrar tipo de impuestos por la descripcion
-
-        if($tipo_imp->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-        return response()->json($tipo_imp, 200); // Retornar los resultados en formato JSON
+        return DB::select("select ti.id as impuesto_id, ti.impuesto_desc 
+        from tipo_impuestos ti
+        where ti.impuesto_desc ilike '%$request->impuesto_desc%';");
     }
 }
