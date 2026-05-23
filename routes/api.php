@@ -72,6 +72,7 @@ use App\Http\Controllers\Asignacion_fondo_fijoController;
 use App\Http\Controllers\Rendicion_ff_cab_Controller;
 use App\Http\Controllers\Rendicion_ff_det_Controller;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\Informes_comprasController;
 use App\Http\Controllers\AuthController;
 
 /*
@@ -259,18 +260,6 @@ Route::get("cta_titular/read", [Cta_titularController::class, "read"]);
 Route::post("cta_titular/create", [Cta_titularController::class, "store"]);
 Route::delete("cta_titular/delete/{id}", [Cta_titularController::class, "destroy"]);
 Route::post("cta_titular/buscar", [Cta_titularController::class, "buscar"]);
-
-Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
-Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
-Route::put("pedido_comp_cab/update/{id}",[Pedido_comp_cabController::class,"update"]);
-Route::put("pedido_comp_cab/anular/{id}",[Pedido_comp_cabController::class,"anular"]);
-Route::put("pedido_comp_cab/confirmar/{id}",[Pedido_comp_cabController::class,"confirmar"]);
-Route::post("pedido_comp_cab/buscar",[Pedido_comp_cabController::class,"buscar"]);
-
-Route::get("pedido_comp_det/read/{id}",[Pedido_comp_detController::class,"read"]);
-Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
-Route::put("pedido_comp_det/update/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"update"]);
-Route::delete("pedido_comp_det/delete/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"destroy"]);
 
 Route::get("presup_comp_cab/read",[Presup_comp_cabController::class,"read"]);
 Route::post("presup_comp_cab/create",[Presup_comp_cabController::class,"store"]);
@@ -503,13 +492,41 @@ Route::delete("rendicion_ff_det/delete/{rendicion_ff_id}/{documento_id}", [Rendi
 Route::get("perfil/read", [PerfilController::class,"read"]);
 Route::post("perfil/create", [PerfilController::class,"store"]);
 
+Route::post("informes/compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
+Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get("pedido_comp_cab/read",[Pedido_comp_cabController::class,"read"]);
+    Route::post("pedido_comp_cab/create",[Pedido_comp_cabController::class,"store"]);
+    Route::put("pedido_comp_cab/update/{id}",[Pedido_comp_cabController::class,"update"]);
+    Route::put("pedido_comp_cab/anular/{id}",[Pedido_comp_cabController::class,"anular"]);
+    Route::put("pedido_comp_cab/confirmar/{id}",[Pedido_comp_cabController::class,"confirmar"]);
+    Route::post("pedido_comp_cab/buscar",[Pedido_comp_cabController::class,"buscar"]);
+
+    Route::get("pedido_comp_det/read/{id}",[Pedido_comp_detController::class,"read"]);
+    Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
+    Route::put("pedido_comp_det/update/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"update"]);
+    Route::delete("pedido_comp_det/delete/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"destroy"]);
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get("funcionario/datosFuncionario",[FuncionarioController::class, "datosFuncionarios"]);
+});
+
+/*Route::middleware('auth:sanctum')->group(function () {
+    Route::post("informes/movimientos_compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
+});*/
+
 Route::post('registrarse',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
 Route::post("users/search", [AuthController::class, 'buscar']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware(['auth:sanctum'])->group(function () {
 Route::get('logout', [AuthController::class, 'logout']);
 });

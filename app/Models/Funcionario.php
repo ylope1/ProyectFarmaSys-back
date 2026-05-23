@@ -15,7 +15,9 @@ class Funcionario extends Model
         'func_fec_ing',
         'func_estado',
         'cargo_id',
-        'user_id'
+        'user_id',
+        'empresa_id',
+        'sucursal_id'
     ];
     /**
      * Define la relacion con el modelo Personas.
@@ -34,5 +36,13 @@ class Funcionario extends Model
     public function cargo()
     {
         return $this->belongsTo(Cargo::class);
+    }
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

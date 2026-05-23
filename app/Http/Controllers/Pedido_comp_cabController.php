@@ -29,12 +29,13 @@ class Pedido_comp_cabController extends Controller
     public function store(Request $request){
         $datosValidados = $request->validate([
             'pedido_comp_fec'=>'required',
-            'pedido_comp_fec_aprob'=>'required',
+            'pedido_comp_fec_aprob'=>'nullable',
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
-            'sucursal_id'=>'required',
-            'user_id'=>'required'
+            'sucursal_id'=>'required'
         ]);
+
+        $datosValidados['user_id'] = auth()->user()->id;
 
         $pedido_comp_cab = Pedido_comp_cab::create($datosValidados);
         $pedido_comp_cab->save();
@@ -57,12 +58,13 @@ class Pedido_comp_cabController extends Controller
 
         $datosValidados = $request->validate([
             'pedido_comp_fec'=>'required',
-            'pedido_comp_fec_aprob'=>'required',
+            'pedido_comp_fec_aprob'=>'nullable',
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
-            'sucursal_id'=>'required',
-            'user_id'=>'required'
+            'sucursal_id'=>'required'
         ]);
+
+        $datosValidados['user_id'] = auth()->user()->id;
 
         $pedido_comp_cab->update($datosValidados);
         return response()->json([
@@ -72,20 +74,7 @@ class Pedido_comp_cabController extends Controller
         ],200);
 
     }
-    public function destroy ($id){
-        $pedido_comp_cab = Pedido_comp_cab::find($id);
-        if(!$pedido_comp_cab){
-            return response()->json([
-                'mensaje'=> 'Registro no encontrado',
-                'tipo'=> 'error'
-            ],404);
-        }
-        $pedido_comp_cab->delete();
-        return response()->json([
-            'mensaje'=> 'Registro eliminado con exito',
-            'tipo'=>'success'
-        ],200);
-    }
+    
     public function anular(Request $request, $id){
         $pedido_comp_cab = Pedido_comp_cab::find($id);
         if(!$pedido_comp_cab){
@@ -96,12 +85,13 @@ class Pedido_comp_cabController extends Controller
         }
         $datosValidados = $request->validate([
             'pedido_comp_fec'=>'required',
-            'pedido_comp_fec_aprob'=>'required',
+            'pedido_comp_fec_aprob'=>'nullable',
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
-            'sucursal_id'=>'required',
-            'user_id'=>'required'
+            'sucursal_id'=>'required'
         ]);
+
+        $datosValidados['user_id'] = auth()->user()->id;
 
         $pedido_comp_cab->update($datosValidados);
         return response()->json([
@@ -110,6 +100,7 @@ class Pedido_comp_cabController extends Controller
             'registro'=> $pedido_comp_cab
         ],200);
     }
+
     public function confirmar(Request $request, $id){
         $pedido_comp_cab = Pedido_comp_cab::find($id);
         if(!$pedido_comp_cab){
@@ -123,9 +114,10 @@ class Pedido_comp_cabController extends Controller
             'pedido_comp_fec_aprob'=>'required',
             'pedido_comp_estado'=>'required',
             'empresa_id'=>'required',
-            'sucursal_id'=>'required',
-            'user_id'=>'required'
+            'sucursal_id'=>'required'
         ]);
+        $datosValidados['user_id'] = auth()->user()->id;
+        
         $pedido_comp_cab->update($datosValidados);
         return response()->json([
             'mensaje'=> 'Registro confirmado con exito',

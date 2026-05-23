@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\Funcionario;
 use App\Models\Persona;
 use App\Models\User;
+use App\Models\Ciudad;
+use App\Models\Pais;
+use App\Models\Empresa;
+use App\Models\Sucursal;
 use Illuminate\Support\Facades\DB;
 
 class FuncionarioController extends Controller
@@ -50,6 +54,7 @@ class FuncionarioController extends Controller
             'pers_email'=>'required|email|unique:personas,pers_email',
             'pais_id'=>'required',
             'ciudad_id'=>'required'
+            
         ]);
             $validatedFuncionario = $request->validate([
             'func_fec_nac' => 'required|date',
@@ -57,7 +62,9 @@ class FuncionarioController extends Controller
             'func_fec_ing' => 'required|date',
             'func_estado' => 'required',
             'cargo_id' => 'required',
-            'user_id' => 'required'
+            'user_id' => 'required',
+            'empresa_id'=>'required',
+            'sucursal_id'=>'required'
         ]);
 
         return DB::transaction(function () use ($validatedPersona, $validatedFuncionario) {
@@ -99,7 +106,9 @@ class FuncionarioController extends Controller
                 'func_fec_ing' => 'required|date',
                 'func_estado'  => 'required',
                 'cargo_id'     => 'required',
-                'user_id'      => 'required'
+                'user_id'      => 'required',
+                'empresa_id'=>'required',
+                'sucursal_id'=>'required'
             ]);
             return DB::transaction(function () use ($funcionario, $validatedPersona, $validatedFuncionario) {
             // Actualizamos persona
@@ -184,4 +193,35 @@ class FuncionarioController extends Controller
         ", ['%' . $remision_vent_repartidor . '%']);
     }
     
+    public function datosFuncionarios()
+    {
+        $user = auth()->user();
+
+        $datos = DB::select("
+            SELECT 
+                u.id AS user_id,
+                u.name AS user_name,
+                f.id AS funcionario_id,
+                e.id AS empresa_id,
+                e.empresa_desc,
+                s.id AS sucursal_id,
+                s.suc_desc
+            FROM users u
+            JOIN funcionarios f ON f.user_id = u.id
+            JOIN empresas e ON e.id = f.empresa_id
+            JOIN sucursales s ON s.id = f.sucursal_id
+            WHERE u.id = ?
+            AND f.func_estado = 'Activo'
+            LIMIT 1
+        ", [$user->id]);
+
+        if (empty($datos)) {
+            return response()->json([
+                'mensaje' => 'El usuario autenticado no tiene empresa y sucursal asignadas',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        return response()->json($datos[0], 200);
+    }
 }
