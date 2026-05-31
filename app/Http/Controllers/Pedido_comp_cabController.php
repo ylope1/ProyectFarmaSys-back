@@ -126,25 +126,40 @@ class Pedido_comp_cabController extends Controller
         ],200);
     }
 
-    public function buscar(Request $r){
-        return DB::select("SELECT 
-            pcc.id,
-            to_char(pcc.pedido_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS pedido_comp_fec,
-            to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS pedido_comp_fec_aprob,
-            pcc.pedido_comp_estado,
-            pcc.empresa_id,  
-            e.empresa_desc,
-            pcc.sucursal_id, 
-            s.suc_desc,
-            u.name as encargado,
-            pcc.id as pedido_comp_id,
-            'PEDIDO NRO:' || to_char(pcc.id, '0000000') || 
-            ' FECHA PEDIDO APROB: ' || to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
-            '(' || pcc.pedido_comp_estado || ')' AS pedido
-        FROM pedidos_comp_cab pcc 
-        JOIN empresas e ON e.id = pcc.empresa_id
-        JOIN sucursales s ON s.id = pcc.sucursal_id 
-        JOIN users u ON u.id = pcc.user_id 
-        WHERE pedido_comp_estado = 'CONFIRMADO' and pcc.user_id = {$r->user_id} and u.name ilike '%{$r->name}%';");
+    public function buscar(Request $r)
+    {
+        return DB::select("
+            SELECT 
+                pcc.id,
+                to_char(pcc.pedido_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS pedido_comp_fec,
+                to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS pedido_comp_fec_aprob,
+                pcc.pedido_comp_estado,
+                pcc.empresa_id,  
+                e.empresa_desc,
+                pcc.sucursal_id, 
+                s.suc_desc,
+                u.name as encargado,
+                pcc.id as pedido_comp_id,
+                'PEDIDO NRO:' || to_char(pcc.id, '0000000') || 
+                ' FECHA PEDIDO APROB: ' || to_char(pcc.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
+                ' (' || pcc.pedido_comp_estado || ')' AS pedido
+            FROM pedidos_comp_cab pcc 
+            JOIN empresas e ON e.id = pcc.empresa_id
+            JOIN sucursales s ON s.id = pcc.sucursal_id 
+            JOIN users u ON u.id = pcc.user_id 
+            WHERE pcc.pedido_comp_estado = 'CONFIRMADO'
+            AND (
+                CAST(pcc.id AS TEXT) ILIKE ?
+                OR u.name ILIKE ?
+                OR e.empresa_desc ILIKE ?
+                OR s.suc_desc ILIKE ?
+            )
+            ORDER BY pcc.id DESC
+        ", [
+            '%' . $r->name . '%',
+            '%' . $r->name . '%',
+            '%' . $r->name . '%',
+            '%' . $r->name . '%'
+        ]);
     }
 }

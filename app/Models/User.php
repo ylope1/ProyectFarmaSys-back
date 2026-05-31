@@ -23,7 +23,7 @@ class User extends Authenticatable
         'password',
         'login',
         'intentos',
-        'perfil_id'
+        'rol_id'
     ];
 
     /**
@@ -51,8 +51,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Funcionario::class);
     }
-    public function perfil()
+    public function rol()
     {
-        return $this->belongsTo(Perfil::class, 'perfil_id');
+        return $this->belongsTo(Rol::class, 'rol_id');
     }
 }

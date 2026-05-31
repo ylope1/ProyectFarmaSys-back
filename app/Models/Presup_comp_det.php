@@ -17,5 +17,6 @@ class Presup_comp_det extends Model
 ];
     protected $primaryKey = ['presup_comp_id','producto_id'];
     public $incrementing = false;
+    public $timestamps = true;
     protected $table = 'presup_comp_det';
 }

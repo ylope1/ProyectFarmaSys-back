@@ -21,6 +21,19 @@ class Pedido_comp_detController extends Controller
             "producto_id"=> "required",
             "pedido_comp_cant"=> "required"
         ]);
+
+        $existe = DB::table('pedidos_comp_det')
+            ->where('pedido_comp_id', $request->pedido_comp_id)
+            ->where('producto_id', $request->producto_id)
+            ->first();
+
+        if ($existe) {
+            return response()->json([
+                'mensaje' => 'El producto ya fue agregado al detalle del pedido.',
+                'tipo' => 'error'
+            ], 400);
+        }
+
         $pedido_comp_det = Pedido_comp_det::create($datosValidados);
         return response()->json([
             'mensaje'=> 'Registro creado con éxito',

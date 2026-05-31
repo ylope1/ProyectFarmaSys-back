@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
-use App\Models\Perfil;
+use App\Models\Roles;
 use \stdClass;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +23,8 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'string|email|max:255|unique:users',
             'password' => 'required|string|min:3',
-            'login' => 'required|string',
-            'perfil_id' => 'required|exists:perfiles,id'
+            'login' => 'required|string|unique:users,login',
+            'rol_id' => 'required|exists:roles,id'
         ]);
 
         if($validator->fails())
@@ -37,7 +37,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'login' => $request->login,
-            'perfil_id' => $request->perfil_id
+            'rol_id' => $request->rol_id
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -89,7 +89,15 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $perfil = Perfil::where('id', $user->perfil_id)->firstOrFail();
+        $rol = Roles::where('id', $user->rol_id)
+            ->where('rol_estado', 'ACTIVO')
+            ->first();
+
+        if ($rol == null) {
+            return response()->json([
+                'message' => 'EL USUARIO NO TIENE UN ROL ACTIVO ASIGNADO'
+            ], 403);
+        }
 
         $user->intentos = 0;
         $user->save();
@@ -100,8 +108,18 @@ class AuthController extends Controller
             'message' => 'Bienvenido '.$user->name,
             'accessToken' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
-            'perfil' => $perfil
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'login' => $user->login,
+                'rol_id' => $user->rol_id
+            ],
+            'rol' => [
+                'id' => $rol->id,
+                'rol_desc' => $rol->rol_desc,
+                'rol_abreviatura' => $rol->rol_abreviatura
+            ]
         ], 200);
     }
 

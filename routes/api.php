@@ -71,7 +71,10 @@ use App\Http\Controllers\Pago_chequesController;
 use App\Http\Controllers\Asignacion_fondo_fijoController;
 use App\Http\Controllers\Rendicion_ff_cab_Controller;
 use App\Http\Controllers\Rendicion_ff_det_Controller;
-use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\RolController;
+use App\Http\Controllers\ModulosController;
+use App\Http\Controllers\AccesosController;
+use App\Http\Controllers\PermisosController;
 use App\Http\Controllers\Informes_comprasController;
 use App\Http\Controllers\AuthController;
 
@@ -260,20 +263,6 @@ Route::get("cta_titular/read", [Cta_titularController::class, "read"]);
 Route::post("cta_titular/create", [Cta_titularController::class, "store"]);
 Route::delete("cta_titular/delete/{id}", [Cta_titularController::class, "destroy"]);
 Route::post("cta_titular/buscar", [Cta_titularController::class, "buscar"]);
-
-Route::get("presup_comp_cab/read",[Presup_comp_cabController::class,"read"]);
-Route::post("presup_comp_cab/create",[Presup_comp_cabController::class,"store"]);
-Route::put("presup_comp_cab/update/{id}",[Presup_comp_cabController::class,"update"]);
-Route::put("presup_comp_cab/anular/{id}",[Presup_comp_cabController::class,"anular"]);
-Route::put("presup_comp_cab/confirmar/{id}",[Presup_comp_cabController::class,"confirmar"]);
-Route::put("presup_comp_cab/rechazar/{id}",[Presup_comp_cabController::class,"rechazar"]);
-Route::put("presup_comp_cab/aprobar/{id}",[Presup_comp_cabController::class,"aprobar"]);
-Route::post("presup_comp_cab/buscar",[Presup_comp_cabController::class,"buscar"]);
-
-Route::get("presup_comp_det/read/{id}",[Presup_comp_detController::class,"read"]);
-Route::post("presup_comp_det/create",[Presup_comp_detController::class,"store"]);
-Route::put("presup_comp_det/update/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"update"]);
-Route::delete("presup_comp_det/delete/{presup_comp_id}/{producto_id}",[Presup_comp_detController::class,"destroy"]);
 
 Route::get("orden_comp_cab/read",[Orden_comp_cabController::class,"read"]);
 Route::post("orden_comp_cab/create",[Orden_comp_cabController::class,"store"]);
@@ -489,11 +478,29 @@ Route::post("rendicion_ff_det/create", [Rendicion_ff_det_Controller::class,"stor
 Route::put("rendicion_ff_det/update/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_det_Controller::class,"update"]);
 Route::delete("rendicion_ff_det/delete/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_det_Controller::class,"destroy"]);
 
-Route::get("perfil/read", [PerfilController::class,"read"]);
-Route::post("perfil/create", [PerfilController::class,"store"]);
+Route::get('rol/read', [RolController::class, 'read']);
+Route::post('rol/create', [RolController::class, 'store']);
+Route::put('rol/update/{id}', [RolController::class, 'update']);
+Route::put('rol/anular/{id}', [RolController::class, 'anular']);
+Route::post('rol/buscar', [RolController::class, 'buscar']);
 
-Route::post("informes/compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
-Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
+Route::get('modulos/read', [ModulosController::class, 'read']);
+Route::post('modulos/create', [ModulosController::class, 'store']);
+Route::put('modulos/update/{id}', [ModulosController::class, 'update']);
+Route::put('modulos/anular/{id}', [ModulosController::class, 'anular']);
+Route::post('modulos/buscar', [ModulosController::class, 'buscar']);
+
+Route::get('accesos/read', [AccesosController::class, 'read']);
+Route::post('accesos/create', [AccesosController::class, 'store']);
+Route::put('accesos/update/{id}', [AccesosController::class, 'update']);
+Route::put('accesos/anular/{id}', [AccesosController::class, 'anular']);
+Route::post('accesos/buscar', [AccesosController::class, 'buscar']);
+Route::get('accesos/buscar-por-modulo/{modulo_id}', [AccesosController::class, 'buscarPorModulo']);
+
+Route::get('permisos/read', [PermisosController::class, 'read']);
+Route::get('permisos/buscar-por-rol/{rol_id}', [PermisosController::class, 'buscarPorRol']);
+Route::post('permisos/create', [PermisosController::class, 'store']);
+Route::post('permisos/verificar', [PermisosController::class, 'verificarPermiso']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -511,6 +518,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post("pedido_comp_det/create",[Pedido_comp_detController::class,"store"]);
     Route::put("pedido_comp_det/update/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"update"]);
     Route::delete("pedido_comp_det/delete/{pedido_comp_id}/{producto_id}",[Pedido_comp_detController::class,"destroy"]);
+
+    Route::get("presup_comp_cab/read", [Presup_comp_cabController::class, "read"]);
+    Route::post("presup_comp_cab/create", [Presup_comp_cabController::class, "store"]);
+    Route::put("presup_comp_cab/update/{id}", [Presup_comp_cabController::class, "update"]);
+    Route::put("presup_comp_cab/anular/{id}", [Presup_comp_cabController::class, "anular"]);
+    Route::put("presup_comp_cab/confirmar/{id}", [Presup_comp_cabController::class, "confirmar"]);
+    Route::put("presup_comp_cab/rechazar/{id}", [Presup_comp_cabController::class, "rechazar"]);
+    Route::put("presup_comp_cab/aprobar/{id}", [Presup_comp_cabController::class, "aprobar"]);
+    Route::post("presup_comp_cab/buscar", [Presup_comp_cabController::class, "buscar"]);
+
+    Route::get("presup_comp_det/read/{id}", [Presup_comp_detController::class, "read"]);
+    Route::post("presup_comp_det/create", [Presup_comp_detController::class, "store"]);
+    Route::put("presup_comp_det/update/{presup_comp_id}/{producto_id}", [Presup_comp_detController::class, "update"]);
+    Route::delete("presup_comp_det/delete/{presup_comp_id}/{producto_id}", [Presup_comp_detController::class, "destroy"]);
 });
 
 
@@ -518,9 +539,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("funcionario/datosFuncionario",[FuncionarioController::class, "datosFuncionarios"]);
 });
 
-/*Route::middleware('auth:sanctum')->group(function () {
-    Route::post("informes/movimientos_compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
-});*/
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post("informes/compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
+Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
+Route::post("informes/compras/presupuestos", [Informes_comprasController::class, "presupuestosCompras"]);
+Route::get("informes/compras/presupuestos/hoja/{id}", [Informes_comprasController::class, "hojaPresupuestoCompra"]);
+});
 
 Route::post('registrarse',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
