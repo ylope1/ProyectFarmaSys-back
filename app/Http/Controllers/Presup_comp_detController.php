@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Presup_comp_det;
+use App\Traits\VerificaPermisos;
 use Illuminate\Support\Facades\DB;
 
 
@@ -11,6 +12,10 @@ class Presup_comp_detController extends Controller
 {
     public function read($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
         return DB::select("
             select 
                 prd.*, 
@@ -22,6 +27,11 @@ class Presup_comp_detController extends Controller
         ", [$id]);
     }
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "presup_comp_id" => "required|integer|exists:presup_comp_cab,id",
             "producto_id" => "required|integer|exists:productos,id",
@@ -67,6 +77,10 @@ class Presup_comp_detController extends Controller
     }
 
     public function update(Request $request, $presup_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
         $request->validate([
             "presup_comp_cant" => "required|numeric|min:1",
             "presup_comp_costo" => "required|numeric|min:0"
@@ -125,6 +139,10 @@ class Presup_comp_detController extends Controller
     }
 
     public function destroy($presup_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
         $cabecera = DB::table('presup_comp_cab')
             ->where('id', $presup_comp_id)
             ->first();

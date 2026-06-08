@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Rol;
+use App\Models\Roles;
 use Illuminate\Support\Facades\DB;
 
 class RolController extends Controller
@@ -15,9 +15,7 @@ class RolController extends Controller
                 id,
                 rol_desc,
                 rol_abreviatura,
-                rol_estado,
-                to_char(created_at, 'DD/MM/YYYY HH24:MI:SS') as created_at,
-                to_char(updated_at, 'DD/MM/YYYY HH24:MI:SS') as updated_at
+                rol_estado
             FROM roles
             ORDER BY id ASC
         ");
@@ -30,7 +28,7 @@ class RolController extends Controller
             'rol_abreviatura' => 'required|string|max:10',
         ]);
 
-        $rol = Rol::create([
+        $rol = Roles::create([
             'rol_desc' => strtoupper($datosValidados['rol_desc']),
             'rol_abreviatura' => strtoupper($datosValidados['rol_abreviatura']),
             'rol_estado' => 'ACTIVO'
@@ -45,7 +43,7 @@ class RolController extends Controller
 
     public function update(Request $request, $id)
     {
-        $rol = Rol::find($id);
+        $rol = Roles::find($id);
 
         if (!$rol) {
             return response()->json([
@@ -75,7 +73,7 @@ class RolController extends Controller
 
     public function anular($id)
     {
-        $rol = Rol::find($id);
+        $rol = Roles::find($id);
 
         if (!$rol) {
             return response()->json([

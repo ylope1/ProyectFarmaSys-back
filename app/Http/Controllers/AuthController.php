@@ -17,7 +17,7 @@ use Carbon\Carbon;
 class AuthController extends Controller
 {
     //
-    public function register(Request $request)
+    /*public function register(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required|string|max:255',
@@ -43,7 +43,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json(['data' => $user,'access_token' => $token, 'token_type' => 'Bearer',]);
-    }
+    }*/
 
     public function login(Request $request)
     {
@@ -64,6 +64,11 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'USUARIO O CONTRASEÑA INCORRECTA'
             ], 401);
+        }
+        if ($user->user_estado !== 'ACTIVO') {
+            return response()->json([
+                'message' => 'USUARIO INACTIVO. CONTACTE AL ADMINISTRADOR DEL SISTEMA'
+            ], 403);
         }
 
         // Si ya tiene 3 intentos fallidos, queda bloqueado
@@ -104,6 +109,35 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $permisos = DB::select("
+            SELECT
+                p.rol_id,
+                p.acceso_id,
+                a.acc_desc,
+                a.acc_ruta,
+                a.acc_orden,
+                m.id AS modulo_id,
+                m.mod_desc,
+                m.mod_orden,
+
+                p.ver,
+                p.crear,
+                p.modificar,
+                p.anular,
+                p.confirmar,
+                p.aprobar,
+                p.rechazar,
+                p.imprimir
+            FROM permisos p
+            JOIN accesos a ON a.id = p.acceso_id
+            JOIN modulos m ON m.id = a.modulo_id
+            WHERE p.rol_id = ?
+            AND p.ver = true
+            AND a.acc_estado = 'ACTIVO'
+            AND m.mod_estado = 'ACTIVO'
+            ORDER BY m.mod_orden ASC, a.acc_orden ASC
+        ", [$user->rol_id]);
+
         return response()->json([
             'message' => 'Bienvenido '.$user->name,
             'accessToken' => $token,
@@ -119,7 +153,8 @@ class AuthController extends Controller
                 'id' => $rol->id,
                 'rol_desc' => $rol->rol_desc,
                 'rol_abreviatura' => $rol->rol_abreviatura
-            ]
+            ],
+            'permisos' => $permisos
         ], 200);
     }
 
@@ -244,20 +279,5 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'CONTRASEÑA ACTUALIZADA CORRECTAMENTE'
         ], 200);
-    }
-
-    // Función para buscar users
-    public function buscar(Request $request){
-        $query = $request->input('login'); // Obtener el valor de 'login' del frontend
-        $user = User::where('login', 'LIKE', "%{$query}%")->get(); // Filtrar login por el nombre
-
-        if($user->isEmpty()){
-            return response()->json([
-                'mensaje' => 'No se encontraron resultados',
-                'tipo' => 'error'
-            ], 404);
-        }
-
-        return response()->json($user, 200); // Retornar los resultados en formato JSON
     }
 }

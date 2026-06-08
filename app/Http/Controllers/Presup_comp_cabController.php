@@ -6,11 +6,20 @@ use Illuminate\Http\Request;
 use App\Models\Presup_comp_cab;
 use App\Models\Pedido_comp_cab;
 use App\Models\Presup_comp_det;
+use App\Traits\VerificaPermisos;
 use Illuminate\Support\Facades\DB;
 
 class Presup_comp_cabController extends Controller
 {
+    use VerificaPermisos;
+
+    private $rutaPermiso = 'movimientos/compras/presupuestos/';
+
     public function read() {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
         return DB::select("select 
             prc.*,
             to_char(prc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec,
@@ -32,6 +41,11 @@ class Presup_comp_cabController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $user = auth()->user();
 
         if (!$user) {
@@ -159,6 +173,11 @@ class Presup_comp_cabController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $presup_comp_cab = Presup_comp_cab::find($id);
 
         if (!$presup_comp_cab) {
@@ -206,6 +225,11 @@ class Presup_comp_cabController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $presup_comp_cab = Presup_comp_cab::find($id);
 
         if (!$presup_comp_cab) {
@@ -256,6 +280,11 @@ class Presup_comp_cabController extends Controller
 
     public function confirmar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $presup_comp_cab = Presup_comp_cab::find($id);
 
         if (!$presup_comp_cab) {
@@ -310,6 +339,11 @@ class Presup_comp_cabController extends Controller
 
     public function rechazar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'rechazar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $presup_comp_cab = Presup_comp_cab::find($id);
 
         if (!$presup_comp_cab) {
@@ -359,6 +393,11 @@ class Presup_comp_cabController extends Controller
     }
     public function aprobar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'aprobar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $presup_comp_cab = Presup_comp_cab::find($id);
 
         if (!$presup_comp_cab) {

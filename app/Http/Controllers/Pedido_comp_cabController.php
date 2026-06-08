@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Pedido_comp_cab;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class Pedido_comp_cabController extends Controller
 {

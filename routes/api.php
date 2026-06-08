@@ -76,6 +76,7 @@ use App\Http\Controllers\ModulosController;
 use App\Http\Controllers\AccesosController;
 use App\Http\Controllers\PermisosController;
 use App\Http\Controllers\Informes_comprasController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\AuthController;
 
 /*
@@ -478,29 +479,38 @@ Route::post("rendicion_ff_det/create", [Rendicion_ff_det_Controller::class,"stor
 Route::put("rendicion_ff_det/update/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_det_Controller::class,"update"]);
 Route::delete("rendicion_ff_det/delete/{rendicion_ff_id}/{documento_id}", [Rendicion_ff_det_Controller::class,"destroy"]);
 
-Route::get('rol/read', [RolController::class, 'read']);
-Route::post('rol/create', [RolController::class, 'store']);
-Route::put('rol/update/{id}', [RolController::class, 'update']);
-Route::put('rol/anular/{id}', [RolController::class, 'anular']);
-Route::post('rol/buscar', [RolController::class, 'buscar']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('rol/read', [RolController::class, 'read']);
+    Route::post('rol/create', [RolController::class, 'store']);
+    Route::put('rol/update/{id}', [RolController::class, 'update']);
+    Route::put('rol/anular/{id}', [RolController::class, 'anular']);
+    Route::post('rol/buscar', [RolController::class, 'buscar']);
 
-Route::get('modulos/read', [ModulosController::class, 'read']);
-Route::post('modulos/create', [ModulosController::class, 'store']);
-Route::put('modulos/update/{id}', [ModulosController::class, 'update']);
-Route::put('modulos/anular/{id}', [ModulosController::class, 'anular']);
-Route::post('modulos/buscar', [ModulosController::class, 'buscar']);
+    Route::get('modulos/read', [ModulosController::class, 'read']);
+    Route::post('modulos/create', [ModulosController::class, 'store']);
+    Route::put('modulos/update/{id}', [ModulosController::class, 'update']);
+    Route::put('modulos/anular/{id}', [ModulosController::class, 'anular']);
+    Route::post('modulos/buscar', [ModulosController::class, 'buscar']);
 
-Route::get('accesos/read', [AccesosController::class, 'read']);
-Route::post('accesos/create', [AccesosController::class, 'store']);
-Route::put('accesos/update/{id}', [AccesosController::class, 'update']);
-Route::put('accesos/anular/{id}', [AccesosController::class, 'anular']);
-Route::post('accesos/buscar', [AccesosController::class, 'buscar']);
-Route::get('accesos/buscar-por-modulo/{modulo_id}', [AccesosController::class, 'buscarPorModulo']);
+    Route::get('accesos/read', [AccesosController::class, 'read']);
+    Route::post('accesos/create', [AccesosController::class, 'store']);
+    Route::put('accesos/update/{id}', [AccesosController::class, 'update']);
+    Route::put('accesos/anular/{id}', [AccesosController::class, 'anular']);
+    Route::post('accesos/buscar', [AccesosController::class, 'buscar']);
+    Route::get('accesos/buscar-por-modulo/{modulo_id}', [AccesosController::class, 'buscarPorModulo']);
 
-Route::get('permisos/read', [PermisosController::class, 'read']);
-Route::get('permisos/buscar-por-rol/{rol_id}', [PermisosController::class, 'buscarPorRol']);
-Route::post('permisos/create', [PermisosController::class, 'store']);
-Route::post('permisos/verificar', [PermisosController::class, 'verificarPermiso']);
+    Route::get('permisos/read', [PermisosController::class, 'read']);
+    Route::get('permisos/buscar-por-rol/{rol_id}', [PermisosController::class, 'buscarPorRol']);
+    Route::post('permisos/create', [PermisosController::class, 'store']);
+    Route::post('permisos/verificar', [PermisosController::class, 'verificarPermiso']);
+
+    Route::get('users/read', [UsersController::class, 'read']);
+    Route::post('users/create', [UsersController::class, 'store']);
+    Route::put('users/update/{id}', [UsersController::class, 'update']);
+    Route::put('users/anular/{id}', [UsersController::class, 'anular']);
+    Route::put('users/desbloquear/{id}', [UsersController::class, 'desbloquear']);
+    Route::post('users/buscar', [UsersController::class, 'buscar']); //usar si no anda: Route::post("users/search", [UsersController::class, 'buscar']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -541,14 +551,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post("informes/compras/pedidos", [Informes_comprasController::class, "pedidosCompras"]);
-Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
-Route::post("informes/compras/presupuestos", [Informes_comprasController::class, "presupuestosCompras"]);
-Route::get("informes/compras/presupuestos/hoja/{id}", [Informes_comprasController::class, "hojaPresupuestoCompra"]);
+    Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
+    Route::post("informes/compras/presupuestos", [Informes_comprasController::class, "presupuestosCompras"]);
+    Route::get("informes/compras/presupuestos/hoja/{id}", [Informes_comprasController::class, "hojaPresupuestoCompra"]);
 });
 
-Route::post('registrarse',[AuthController::class, 'register']);
+//Route::post('registrarse',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
-Route::post("users/search", [AuthController::class, 'buscar']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware(['auth:sanctum'])->group(function () {

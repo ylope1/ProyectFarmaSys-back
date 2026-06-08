@@ -22,7 +22,7 @@ class PermisosController extends Controller
 
                 p.ver,
                 p.crear,
-                p.editar,
+                p.modificar,
                 p.anular,
                 p.confirmar,
                 p.aprobar,
@@ -53,7 +53,7 @@ class PermisosController extends Controller
 
                 COALESCE(p.ver, false) as ver,
                 COALESCE(p.crear, false) as crear,
-                COALESCE(p.editar, false) as editar,
+                COALESCE(p.modificar, false) as modificar,
                 COALESCE(p.anular, false) as anular,
                 COALESCE(p.confirmar, false) as confirmar,
                 COALESCE(p.aprobar, false) as aprobar,
@@ -93,10 +93,10 @@ class PermisosController extends Controller
                     [
                         'ver' => $permiso['ver'] ?? false,
                         'crear' => $permiso['crear'] ?? false,
-                        'editar' => $permiso['editar'] ?? false,
+                        'modificar' => $permiso['modificar'] ?? false,
                         'anular' => $permiso['anular'] ?? false,
                         'confirmar' => $permiso['confirmar'] ?? false,
-                        'aprobar' => $permiso[' aprobar'] ?? false,
+                        'aprobar' => $permiso['aprobar'] ?? false,
                         'rechazar' => $permiso['rechazar'] ?? false,
                         'imprimir' => $permiso['imprimir'] ?? false,
                         'updated_at' => now(),
@@ -134,7 +134,7 @@ class PermisosController extends Controller
         $accionesPermitidas = [
             'ver',
             'crear',
-            'editar',
+            'modificar',
             'anular',
             'confirmar',
             'aprobar',
