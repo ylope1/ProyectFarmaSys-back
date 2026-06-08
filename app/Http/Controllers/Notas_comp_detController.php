@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Notas_comp_det;
+use App\Traits\VerificaPermisos;
 
 class Notas_comp_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/notas_cred_deb/';
+    
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 ncd.*, 
@@ -23,6 +32,11 @@ class Notas_comp_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "nota_comp_id"     => "required|exists:notas_comp_cab,id",
             "producto_id"      => "required|exists:productos,id",
@@ -41,6 +55,11 @@ class Notas_comp_detController extends Controller
     }
 
     public function update(Request $request, $nota_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "compra_cant"      => "required|numeric|min:1",
             "compra_costo"     => "required|numeric|min:0",
@@ -69,6 +88,11 @@ class Notas_comp_detController extends Controller
     }
 
     public function destroy($nota_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
+        
         DB::table('notas_comp_det')
             ->where('nota_comp_id', $nota_comp_id)
             ->where('producto_id', $producto_id)

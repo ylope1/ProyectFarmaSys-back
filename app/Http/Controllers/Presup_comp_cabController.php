@@ -6,13 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Presup_comp_cab;
 use App\Models\Pedido_comp_cab;
 use App\Models\Presup_comp_det;
-use App\Traits\VerificaPermisos;
+use App\Traits\VerificaPermisos;    
 use Illuminate\Support\Facades\DB;
 
 class Presup_comp_cabController extends Controller
 {
     use VerificaPermisos;
-
     private $rutaPermiso = 'movimientos/compras/presupuestos/';
 
     public function read() {
@@ -20,6 +19,7 @@ class Presup_comp_cabController extends Controller
         if ($permiso) {
             return $permiso;
         }
+
         return DB::select("select 
             prc.*,
             to_char(prc.presup_comp_fec, 'dd/mm/yyyy HH24:mi:ss' ) as presup_comp_fec,

@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Orden_comp_cab;
 use App\Models\Orden_comp_det;
+use App\Traits\VerificaPermisos;
 use Illuminate\Support\Facades\DB;
 
 class Orden_comp_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/orden_compras/';
+    
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         // Buscar la orden de compra para saber si tiene pedido, presupuesto o ambos
         $orden_comp_cab = DB::table('orden_comp_cab')->where('id', $id)->first();
 
@@ -49,6 +58,11 @@ class Orden_comp_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "orden_comp_id"=> "required",
             "producto_id"=> "required",
@@ -64,6 +78,11 @@ class Orden_comp_detController extends Controller
     }
 
     public function update(Request $request, $orden_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "orden_comp_cant"=> "required",
             "orden_comp_costo"=> "required"
@@ -87,6 +106,10 @@ class Orden_comp_detController extends Controller
     }
 
     public function destroy($orden_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
         DB::table('orden_comp_det')
             ->where('orden_comp_id', $orden_comp_id)
             ->where('producto_id', $producto_id)

@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pedido_comp_det;
+use App\Traits\VerificaPermisos;
 use Illuminate\Support\Facades\DB;
 
 class Pedido_comp_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/pedidos/';
+    
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
         return DB::select("select pcd.*, p.prod_desc  
         from pedidos_comp_det pcd
         join productos p on p.id = pcd.producto_id
@@ -16,6 +24,11 @@ class Pedido_comp_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "pedido_comp_id"=> "required",
             "producto_id"=> "required",
@@ -43,6 +56,11 @@ class Pedido_comp_detController extends Controller
     }
 
     public function update(Request $request, $pedido_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $pedido_comp_det = DB::table('pedidos_comp_det')
         ->where('pedido_comp_id', $pedido_comp_id)
         ->where('producto_id', $producto_id)
@@ -57,6 +75,10 @@ class Pedido_comp_detController extends Controller
         ],200);
     }
     public function destroy($pedido_comp_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
         $pedido_comp_det = DB::table('pedidos_comp_det')
         ->where('pedido_comp_id', $pedido_comp_id)
         ->where('producto_id', $producto_id)

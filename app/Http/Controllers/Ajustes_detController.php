@@ -6,11 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Ajustes_cab;
 use App\Models\Ajustes_det;
+use App\Traits\VerificaPermisos;
 
 class Ajustes_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/ajustes/';
+    
     public function read($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
             ad.*, 
@@ -27,6 +36,11 @@ class Ajustes_detController extends Controller
     }
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'ajuste_id'     => 'required|exists:ajustes_cab,id',
             'producto_id'   => 'required|exists:productos,id',
@@ -68,6 +82,11 @@ class Ajustes_detController extends Controller
     }
     public function update(Request $request, $ajuste_id, $producto_id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "ajuste_cant"   => "required|numeric|min:1",
             "ajuste_costo"  => "required|numeric|min:0"
@@ -112,6 +131,11 @@ class Ajustes_detController extends Controller
         ], 200);
     }
     public function destroy($ajuste_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
+        
         // Validar estado del ajuste
         $estado = DB::table('ajustes_cab')->where('id', $ajuste_id)->value('ajuste_estado');
         if ($estado !== 'PENDIENTE') {

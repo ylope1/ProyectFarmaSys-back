@@ -4,12 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 use App\Models\Ajustes_cab;
 
 class Ajustes_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/ajustes/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
         SELECT 
             ac.*,
@@ -30,6 +39,11 @@ class Ajustes_cabController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'empresa_id'            => 'required',
             'sucursal_id'           => 'required',
@@ -57,6 +71,11 @@ class Ajustes_cabController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $ajuste = Ajustes_cab::find($id);
         if (!$ajuste) {
             return response()->json([
@@ -88,6 +107,11 @@ class Ajustes_cabController extends Controller
     }
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $ajuste = Ajustes_cab::find($id);
 
         if (!$ajuste || $ajuste->ajuste_estado != 'PENDIENTE') {
@@ -108,6 +132,11 @@ class Ajustes_cabController extends Controller
     }
     public function confirmar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         // Verificar que exista
         $ajuste = Ajustes_cab::find($id);
         if (!$ajuste) {

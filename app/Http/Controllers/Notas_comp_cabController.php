@@ -12,11 +12,20 @@ use App\Models\Proveedore;
 use App\Models\Libro_compras;
 use App\Models\Ctas_pagar;
 use App\Models\Producto;
+use App\Traits\VerificaPermisos;
 
 class Notas_comp_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/notas_cred_deb/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("SELECT
             ncc.*,
             p.proveedor_desc,
@@ -43,6 +52,11 @@ class Notas_comp_cabController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         // Verificar duplicados PRIMERO
         $existe = Notas_comp_cab::where('compra_id', $request->compra_id)
                 ->where('nota_comp_tipo', $request->nota_comp_tipo)
@@ -110,6 +124,11 @@ class Notas_comp_cabController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $nota = Notas_comp_cab::find($id);
         if (!$nota || $nota->nota_comp_estado !== 'PENDIENTE') {
             return response()->json([
@@ -140,6 +159,11 @@ class Notas_comp_cabController extends Controller
 
     public function anular(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $nota = Notas_comp_cab::find($id);
         if (!$nota) {
             return response()->json([
@@ -167,6 +191,11 @@ class Notas_comp_cabController extends Controller
 
     public function confirmar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $nota = Notas_comp_cab::find($id);
 
         if (!$nota || $nota->nota_comp_estado !== 'PENDIENTE') {

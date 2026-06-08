@@ -9,11 +9,21 @@ use App\Models\Pedido_comp_cab;
 use App\Models\Pedido_comp_det;
 use App\Models\Presup_comp_cab;
 use App\Models\Presup_comp_det;
+use App\Traits\VerificaPermisos;
 use Illuminate\Support\Facades\DB;
 
 class Orden_comp_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/orden_compras/';
+
     public function read() { 
+        
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select 
         occ.*,
         to_char(occ.orden_comp_fec, 'dd/mm/yyyy HH24:mi:ss') as orden_comp_fec,
@@ -47,6 +57,10 @@ class Orden_comp_cabController extends Controller
         left join presup_comp_cab pre on pre.id = occ.presup_comp_id;");
     }
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
         $datosValidados = $request->validate([
             'presup_comp_id' => 'nullable',
             'pedido_comp_id' => 'nullable',
@@ -132,6 +146,10 @@ class Orden_comp_cabController extends Controller
         ], 200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
         $orden_comp_cab = Orden_comp_cab::find($id);
         if(!$orden_comp_cab){
             return response()->json([
@@ -180,21 +198,12 @@ class Orden_comp_cabController extends Controller
             'registro'=> $orden_comp_cab
         ],200);
     }
-    public function destroy ($id){
-        $orden_comp_cab = Orden_comp_cab::find($id);
-        if(!$orden_comp_cab){
-            return response()->json([
-                'mensaje'=> 'Registro no encontrado',
-                'tipo'=> 'error'
-            ],404);
-        }
-        $orden_comp_cab->delete();
-        return response()->json([
-            'mensaje'=> 'Registro eliminado con exito',
-            'tipo'=>'success'
-        ],200);
-    }
     public function anular(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $orden_comp_cab = Orden_comp_cab::find($id);
         if(!$orden_comp_cab){
             return response()->json([
@@ -229,6 +238,11 @@ class Orden_comp_cabController extends Controller
         ],200);
     }
     public function confirmar(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $orden_comp_cab = Orden_comp_cab::find($id);
         if(!$orden_comp_cab){
             return response()->json([
@@ -257,6 +271,11 @@ class Orden_comp_cabController extends Controller
         ],200);
     }
     public function rechazar(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'rechazar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $orden_comp_cab = Orden_comp_cab::find($id);
         if(!$orden_comp_cab){
             return response()->json([
@@ -285,6 +304,11 @@ class Orden_comp_cabController extends Controller
         ],200);
     }
     public function aprobar(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'aprobar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $orden_comp_cab = Orden_comp_cab::find($id);
         if(!$orden_comp_cab){
             return response()->json([

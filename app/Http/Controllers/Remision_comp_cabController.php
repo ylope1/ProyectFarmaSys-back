@@ -6,45 +6,59 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Remision_comp_cab;
 use App\Models\Remision_comp_det;
+use App\Traits\VerificaPermisos;
 
 class Remision_comp_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/nota_remision/';
+    
     public function read()
-{
-    return DB::select("
-        SELECT 
-            rc.*,
-            e.empresa_desc,
-            so.suc_desc AS sucursal_origen,
-            sd.suc_desc AS sucursal_destino,
-            di.deposito_desc AS deposito_origen,
-            dd.deposito_desc AS deposito_destino,
-            v.vehiculo_desc,
-            m.remision_motivo_desc,
-            to_char(rc.rem_comp_fec, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec,
-            to_char(rc.rem_comp_fec_sal, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec_sal,
-            to_char(rc.rem_comp_fec_recep, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec_recep,
-            u.name as encargado,
-            COALESCE(
-                'PEDIDO NRO: ' || LPAD(p.id::text, 7, '0') ||
-                ' - FECHA: ' || to_char(p.pedido_comp_fec, 'YYYY-MM-DD HH24:MI:SS') ||
-                ' - ESTADO: ' || p.pedido_comp_estado,
-                'SIN PEDIDO ASOCIADO'
-            ) as pedido
-            FROM remision_comp_cab rc
-            JOIN empresas e ON e.id = rc.empresa_id
-            JOIN sucursales so ON so.id = rc.sucursal_origen_id
-            JOIN sucursales sd ON sd.id = rc.sucursal_destino_id
-            JOIN depositos di ON di.id = rc.deposito_origen_id
-            JOIN depositos dd ON dd.id = rc.deposito_destino_id
-            JOIN users u ON u.id = rc.user_id
-            JOIN vehiculos v ON v.id = rc.vehiculo_id
-            JOIN remision_motivo m ON m.id = rc.remision_motivo_id
-            LEFT JOIN pedidos_comp_cab p ON p.id = rc.pedido_comp_id;
-        ");
+    {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
+        return DB::select("
+            SELECT 
+                rc.*,
+                e.empresa_desc,
+                so.suc_desc AS sucursal_origen,
+                sd.suc_desc AS sucursal_destino,
+                di.deposito_desc AS deposito_origen,
+                dd.deposito_desc AS deposito_destino,
+                v.vehiculo_desc,
+                m.remision_motivo_desc,
+                to_char(rc.rem_comp_fec, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec,
+                to_char(rc.rem_comp_fec_sal, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec_sal,
+                to_char(rc.rem_comp_fec_recep, 'dd/mm/yyyy HH24:mi:ss') as rem_comp_fec_recep,
+                u.name as encargado,
+                COALESCE(
+                    'PEDIDO NRO: ' || LPAD(p.id::text, 7, '0') ||
+                    ' - FECHA: ' || to_char(p.pedido_comp_fec, 'YYYY-MM-DD HH24:MI:SS') ||
+                    ' - ESTADO: ' || p.pedido_comp_estado,
+                    'SIN PEDIDO ASOCIADO'
+                ) as pedido
+                FROM remision_comp_cab rc
+                JOIN empresas e ON e.id = rc.empresa_id
+                JOIN sucursales so ON so.id = rc.sucursal_origen_id
+                JOIN sucursales sd ON sd.id = rc.sucursal_destino_id
+                JOIN depositos di ON di.id = rc.deposito_origen_id
+                JOIN depositos dd ON dd.id = rc.deposito_destino_id
+                JOIN users u ON u.id = rc.user_id
+                JOIN vehiculos v ON v.id = rc.vehiculo_id
+                JOIN remision_motivo m ON m.id = rc.remision_motivo_id
+                LEFT JOIN pedidos_comp_cab p ON p.id = rc.pedido_comp_id;
+            ");
     }
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         // Convertir campo de llegada vacío a null
         if ($request->rem_comp_fec_recep === '') {
             $request->merge(['rem_comp_fec_recep' => null]);
@@ -100,7 +114,7 @@ class Remision_comp_cabController extends Controller
                     'rem_comp_obs'     => null //se completa desde el front si hace falta
                 ]);
             }
-        }    
+            }    
         return response()->json([
             'mensaje'  => 'Nota de remisión registrada con éxito.',
             'tipo'     => 'success',
@@ -110,6 +124,11 @@ class Remision_comp_cabController extends Controller
     
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $remision = Remision_comp_cab::find($id);
 
         if (!$remision) {
@@ -157,24 +176,13 @@ class Remision_comp_cabController extends Controller
         ], 200);
     }
 
-    public function destroy($id)
-    {
-        $remision = Remision_comp_cab::find($id);
-        if (!$remision) {
-            return response()->json([
-                'mensaje' => 'Registro no encontrado',
-                'tipo'    => 'error'
-            ], 404);
-        }
-
-        $remision->delete();
-        return response()->json([
-            'mensaje' => 'Registro eliminado con éxito',
-            'tipo'    => 'success'
-        ], 200);
-    }
     public function anular(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $remision = Remision_comp_cab::find($id);
 
         if (!$remision) {
@@ -209,6 +217,11 @@ class Remision_comp_cabController extends Controller
     }
         public function confirmar(Request $r, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $remision = Remision_comp_cab::find($id);
 
         if (!$remision) {

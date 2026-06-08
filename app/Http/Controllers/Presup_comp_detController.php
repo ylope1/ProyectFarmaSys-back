@@ -10,12 +10,16 @@ use Illuminate\Support\Facades\DB;
 
 class Presup_comp_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/compras/presupuestos/';
+
     public function read($id)
     {
         $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
         if ($permiso) {
             return $permiso;
         }
+
         return DB::select("
             select 
                 prd.*, 
@@ -81,6 +85,7 @@ class Presup_comp_detController extends Controller
         if ($permiso) {
             return $permiso;
         }
+
         $request->validate([
             "presup_comp_cant" => "required|numeric|min:1",
             "presup_comp_costo" => "required|numeric|min:0"
@@ -143,6 +148,7 @@ class Presup_comp_detController extends Controller
         if ($permiso) {
             return $permiso;
         }
+
         $cabecera = DB::table('presup_comp_cab')
             ->where('id', $presup_comp_id)
             ->first();
