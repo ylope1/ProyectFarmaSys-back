@@ -5,13 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Paises;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
+
 class PaiseController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/varios/paises/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return Paises::all();
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'pais_desc'=>'required', 'string', 'min:3', 'max:20', 'regex:/^[a-zA-Z\s]+$/', 'unique:paises,pais_desc'
         ]);
@@ -24,6 +39,11 @@ class PaiseController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $paise = Paises::find($id);
         if(!$paise){
             return response()->json([
@@ -43,6 +63,11 @@ class PaiseController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $paise = Paises::find($id);
         if(!$paise){
             return response()->json([

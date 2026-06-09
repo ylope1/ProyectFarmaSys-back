@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Roles;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class RolController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/seguridad/roles/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 id,
@@ -23,6 +32,11 @@ class RolController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'rol_desc' => 'required|string|max:50',
             'rol_abreviatura' => 'required|string|max:10',
@@ -43,6 +57,11 @@ class RolController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $rol = Roles::find($id);
 
         if (!$rol) {
@@ -73,6 +92,11 @@ class RolController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $rol = Roles::find($id);
 
         if (!$rol) {

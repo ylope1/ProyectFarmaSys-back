@@ -7,11 +7,20 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class UsersController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/seguridad/usuarios/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT
                 u.id,
@@ -32,6 +41,11 @@ class UsersController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:users,email',
@@ -83,6 +97,11 @@ class UsersController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $usuario = DB::selectOne("
             SELECT id
             FROM users
@@ -152,6 +171,11 @@ class UsersController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $usuario = DB::selectOne("
             SELECT id, user_estado
             FROM users
@@ -179,7 +203,7 @@ class UsersController extends Controller
     }
 
     public function desbloquear($id)
-    {
+    {   //ver como voy a hacer con este
         $usuario = DB::selectOne("
             SELECT id
             FROM users

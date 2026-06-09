@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Entidades_adheridas;
+use App\Traits\VerificaPermisos; 
 
 class Entidades_adheridasController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/ventas/entidad_adherida/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select * from entidades_adheridas;");
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'ent_adhe_desc' => 'required',
             'ent_adhe_direc' => 'nullable',
@@ -32,6 +46,11 @@ class Entidades_adheridasController extends Controller
     }
 
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $entidades_adheridas = Entidades_adheridas::find($id);
 
         if(!$entidades_adheridas){
@@ -59,6 +78,11 @@ class Entidades_adheridasController extends Controller
     }
 
     public function destroy($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $entidades_adheridas = Entidades_adheridas::find($id);
 
         if(!$entidades_adheridas){

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Remision_motivo;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class Remision_motivoController extends Controller
 {

@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tipo_impuesto;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class Tipo_impuestoController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/tipo_impuesto/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return Tipo_impuesto::all();
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'impuesto_desc'=>'required'
         ]);
@@ -25,6 +39,11 @@ class Tipo_impuestoController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $tipo_imp = Tipo_impuesto::find($id);
         if(!$tipo_imp){
             return response()->json([
@@ -44,6 +63,11 @@ class Tipo_impuestoController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $tipo_imp = Tipo_impuesto::find($id);
         if(!$tipo_imp){
             return response()->json([

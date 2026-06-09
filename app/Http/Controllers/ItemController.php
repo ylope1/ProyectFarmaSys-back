@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Item;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class ItemController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/items/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return Item::all();
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'item_desc'=>'required'
         ]);
@@ -25,6 +39,11 @@ class ItemController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $item = Item::find($id);
         if(!$item){
             return response()->json([
@@ -44,6 +63,11 @@ class ItemController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $item = Item::find($id);
         if(!$item){
             return response()->json([

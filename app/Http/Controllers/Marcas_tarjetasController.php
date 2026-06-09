@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Marcas_tarjetas;
 
+
 class Marcas_tarjetasController extends Controller
 {
     public function read(){

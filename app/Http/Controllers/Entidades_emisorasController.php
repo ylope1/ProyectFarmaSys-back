@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Entidades_emisoras;
+use App\Traits\VerificaPermisos; 
 
 class Entidades_emisorasController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/ventas/entidad_emisora/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select * from entidades_emisoras;");
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'ent_emi_desc' => 'required',
             'ent_emi_direc' => 'nullable',
@@ -32,6 +46,11 @@ class Entidades_emisorasController extends Controller
     }
 
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $entidadEmisora = Entidades_emisoras::find($id);
 
         if(!$entidadEmisora){
@@ -59,6 +78,11 @@ class Entidades_emisorasController extends Controller
     }
 
     public function destroy($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $entidadEmisora = Entidades_emisoras::find($id);
 
         if(!$entidadEmisora){

@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Vehiculos;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class VehiculosController extends Controller
 {
+    //use VerificaPermisos;
+    //private $rutaPermiso = 'referenciales/seguridad/accesos/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return Vehiculos::all();
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'vehiculo_desc'=>'required',
             'matricula'=>'required',
@@ -28,6 +42,11 @@ class VehiculosController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $vehiculo = Vehiculos::find($id);
         if(!$vehiculo){
             return response()->json([
@@ -50,6 +69,11 @@ class VehiculosController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $vehiculo = Vehiculos::find($id);
         if(!$vehiculo){
             return response()->json([

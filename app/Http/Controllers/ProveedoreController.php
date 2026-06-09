@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Proveedore;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class ProveedoreController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/proveedores/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select pr.*, p.pais_desc, c.ciudad_desc 
         from proveedores pr
         join paises p on p.id = pr.pais_id 
@@ -16,6 +25,11 @@ class ProveedoreController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'proveedor_desc'=>'required',
             'proveedor_ruc'=>'required',
@@ -35,6 +49,11 @@ class ProveedoreController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $proveedore = Proveedore::find($id);
         if(!$proveedore){
             return response()->json([
@@ -61,6 +80,11 @@ class ProveedoreController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $proveedore = Proveedore::find($id);
         if(!$proveedore){
             return response()->json([

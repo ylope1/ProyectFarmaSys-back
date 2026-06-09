@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Accesos;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;  
 
 class AccesosController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/seguridad/accesos/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 a.id,
@@ -29,6 +38,11 @@ class AccesosController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'modulo_id' => 'required|exists:modulos,id',
             'acc_desc' => 'required|string|max:100',
@@ -53,6 +67,11 @@ class AccesosController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $acceso = Accesos::find($id);
 
         if (!$acceso) {
@@ -87,6 +106,11 @@ class AccesosController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $acceso = Accesos::find($id);
 
         if (!$acceso) {

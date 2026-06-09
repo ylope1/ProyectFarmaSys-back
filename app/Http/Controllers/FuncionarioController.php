@@ -11,11 +11,21 @@ use App\Models\Ciudad;
 use App\Models\Pais;
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use App\Traits\VerificaPermisos; 
 use Illuminate\Support\Facades\DB;
+
 
 class FuncionarioController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/funcionarios/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select 
         f.id,
         p.pers_nombre, 
@@ -45,6 +55,11 @@ class FuncionarioController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $validatedPersona = $request->validate([
             'pers_nombre'=>'required',
             'pers_apellido'=>'required',
@@ -81,6 +96,11 @@ class FuncionarioController extends Controller
         });
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $funcionario = Funcionario::find($id);
         if(!$funcionario){
             return response()->json([
@@ -127,6 +147,11 @@ class FuncionarioController extends Controller
 
     //en este modelo el destroy solo lo hace en funcionario pero persona no se borra ya que funcionario puede pasar a ser cliente
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $funcionario = Funcionario::with('persona')->find($id);
             if(!$funcionario){
                 return response()->json([

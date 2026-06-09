@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Deposito;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class DepositoController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/depositos/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select de.*, p.pais_desc, c.ciudad_desc, e.empresa_desc, s.suc_desc
         from depositos de
         join paises p on p.id = de.pais_id 
@@ -18,6 +27,11 @@ class DepositoController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'deposito_desc'=>'required',
             'deposito_direc'=>'required',
@@ -37,6 +51,11 @@ class DepositoController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $deposito = Deposito::find($id);
         if(!$deposito){
             return response()->json([
@@ -63,6 +82,11 @@ class DepositoController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $deposito = Deposito::find($id);
         if(!$deposito){
             return response()->json([

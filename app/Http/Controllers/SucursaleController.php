@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Sucursale;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class SucursaleController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/sucursales/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select s.*, p.pais_desc, c.ciudad_desc, e.empresa_desc 
         from sucursales s 
         join paises p on p.id = s.pais_id 
@@ -17,6 +26,11 @@ class SucursaleController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'suc_desc'=>'required',
             'suc_direc'=>'required',
@@ -35,6 +49,11 @@ class SucursaleController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $sucursale = Sucursale::find($id);
         if(!$sucursale){
             return response()->json([
@@ -60,6 +79,11 @@ class SucursaleController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $sucursale = Sucursale::find($id);
         if(!$sucursale){
             return response()->json([

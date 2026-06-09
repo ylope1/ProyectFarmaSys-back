@@ -4,14 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cargo;
+use App\Traits\VerificaPermisos;
 
 class CargoController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/varios/cargos/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return Cargo::all();
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'cargo_desc'=>'required'
         ]);
@@ -24,6 +38,11 @@ class CargoController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $cargo = Cargo::find($id);
         if(!$cargo){
             return response()->json([
@@ -43,6 +62,11 @@ class CargoController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $cargo = Cargo::find($id);
         if(!$cargo){
             return response()->json([

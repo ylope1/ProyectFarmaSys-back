@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Permisos;
+use App\Traits\VerificaPermisos; 
 
 class PermisosController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/seguridad/permisos/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 p.rol_id,
@@ -72,6 +81,11 @@ class PermisosController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $request->validate([
             'rol_id' => 'required|exists:roles,id',
             'permisos' => 'required|array'

@@ -5,14 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ciudade;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class CiudadeController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/varios/ciudades/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select c.*, p.pais_desc from ciudades c join paises p on p.id = c.pais_id");
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'ciudad_desc'=>'required',
             'pais_id'=>'required'
@@ -26,6 +40,11 @@ class CiudadeController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $ciudade = Ciudade::find($id);
         if(!$ciudade){
             return response()->json([
@@ -46,6 +65,11 @@ class CiudadeController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $ciudade = Ciudade::find($id);
         if(!$ciudade){
             return response()->json([

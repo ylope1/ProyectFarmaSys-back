@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class ProductoController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/compras/productos/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select prod.*, pr.proveedor_desc, i.item_desc, ti.impuesto_desc, m.marca_desc
         from productos prod
         join proveedores pr on pr.id = prod.proveedor_id  
@@ -18,6 +27,11 @@ class ProductoController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'prod_desc'=>'required',
             'prod_precio_comp'=>'required',
@@ -37,6 +51,11 @@ class ProductoController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $producto = Producto::find($id);
         if(!$producto){
             return response()->json([
@@ -63,6 +82,11 @@ class ProductoController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $producto = Producto::find($id);
         if(!$producto){
             return response()->json([

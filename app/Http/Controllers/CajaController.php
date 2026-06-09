@@ -8,10 +8,19 @@ use App\Models\Empresas;
 use App\Models\Sucursales;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos; 
 
 class CajaController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'referenciales/ventas/cajas/';
+
     public function read(){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("select 
             c.*,
             e.empresa_desc,
@@ -25,6 +34,11 @@ class CajaController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             'caja_desc'=>'required',
             'sucursal_id'=>'required',
@@ -40,6 +54,11 @@ class CajaController extends Controller
         ],200);
     }
     public function update(Request $request, $id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $caja = Cajas::find($id);
         if(!$caja){
             return response()->json([
@@ -62,6 +81,11 @@ class CajaController extends Controller
 
     }
     public function destroy ($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $caja = Cajas::find($id);
         if(!$caja){
             return response()->json([
