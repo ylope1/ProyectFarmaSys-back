@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Pedidos_vent_det;
+use App\Traits\VerificaPermisos;
 
 class Pedidos_vent_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/pedidos_ventas/';
+
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("SELECT pvd.*, p.prod_desc  
         FROM pedidos_vent_det pvd
         JOIN productos p ON p.id = pvd.producto_id
@@ -16,6 +25,11 @@ class Pedidos_vent_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "pedido_vent_id"     => "required",
             "producto_id"        => "required",
@@ -32,6 +46,11 @@ class Pedidos_vent_detController extends Controller
     }
 
     public function update(Request $request, $pedido_vent_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "pedido_vent_cant"   => "required|numeric|min:1",
             "pedido_vent_precio" => "required|numeric|min:0"
@@ -52,6 +71,11 @@ class Pedidos_vent_detController extends Controller
     }
 
     public function destroy($pedido_vent_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
+        
         DB::table('pedidos_vent_det')
             ->where('pedido_vent_id', $pedido_vent_id)
             ->where('producto_id', $producto_id)

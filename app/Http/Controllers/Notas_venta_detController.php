@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Notas_venta_det;
+use App\Traits\VerificaPermisos;
 
 class Notas_venta_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/notas_cred_deb/';
+
     public function read($id){ 
         return DB::select("
             SELECT 
@@ -23,6 +27,11 @@ class Notas_venta_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "nota_venta_id"     => "required|exists:notas_venta_cab,id",
             "producto_id"      => "required|exists:productos,id",
@@ -41,6 +50,11 @@ class Notas_venta_detController extends Controller
     }
 
     public function update(Request $request, $nota_venta_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "nota_venta_cant"      => "required|numeric|min:1",
             "nota_venta_precio"     => "required|numeric|min:0",
@@ -69,6 +83,11 @@ class Notas_venta_detController extends Controller
     }
 
     public function destroy($nota_venta_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        }
+        
         DB::table('notas_venta_det')
             ->where('nota_venta_id', $nota_venta_id)
             ->where('producto_id', $producto_id)

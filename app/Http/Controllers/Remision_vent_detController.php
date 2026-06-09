@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Remision_vent_det;
+use App\Traits\VerificaPermisos;
 
 class Remision_vent_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/nota_remision/';
+
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 rvd.*, 
@@ -23,6 +32,11 @@ class Remision_vent_detController extends Controller
     }
 
     public function store(Request $request){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "remision_vent_id"     => "required|exists:remision_vent_cab,id",
             "producto_id"   => "required|exists:productos,id",
@@ -52,6 +66,11 @@ class Remision_vent_detController extends Controller
     }
 
     public function update(Request $request, $remision_vent_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "remision_vent_cant"   => "required|numeric|min:1",
             "remision_vent_precio"  => "required|numeric|min:0",
@@ -89,6 +108,10 @@ class Remision_vent_detController extends Controller
     }
 
     public function destroy($remision_vent_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
         
         // Verificar estado cabecera
         $estado = DB::table('remision_vent_cab')->where('id', $remision_vent_id)->value('remision_vent_estado');

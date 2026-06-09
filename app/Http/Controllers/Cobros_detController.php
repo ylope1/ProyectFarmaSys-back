@@ -6,11 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cobros_det;
 use App\Models\Cobros_cab;
+use App\Traits\VerificaPermisos;
 
 class Cobros_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/cobranza/';
+
     public function read($cobro_id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             select 
                 cd.cobro_id,
@@ -45,6 +54,11 @@ class Cobros_detController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datos = $request->validate([
             'cobro_id'               => 'required|integer',
             'cta_cobrar_id'          => 'required|integer',
@@ -153,10 +167,13 @@ class Cobros_detController extends Controller
         }
     }
 
-
-
     public function destroy(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
+        if ($permiso) {
+            return $permiso;
+        } 
+        
         $datos = $request->validate([
             'cobro_id'               => 'required',
             'cta_cobrar_id'          => 'required',

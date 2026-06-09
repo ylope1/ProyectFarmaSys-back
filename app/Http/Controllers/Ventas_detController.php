@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Ventas_det;
+use App\Traits\VerificaPermisos; 
 
 class Ventas_detController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/registrar_ventas/';
+    
     public function read($id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
             vd.*, 
@@ -40,6 +49,11 @@ class Ventas_detController extends Controller
     }
 
     public function update(Request $request, $venta_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datosValidados = $request->validate([
             "venta_cant"   => "required|numeric|min:1",
             "venta_precio"  => "required|numeric|min:0"
@@ -66,6 +80,11 @@ class Ventas_detController extends Controller
     }
 
     public function destroy($venta_id, $producto_id){
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         DB::table('ventas_det')
             ->where('venta_id', $venta_id)
             ->where('producto_id', $producto_id)

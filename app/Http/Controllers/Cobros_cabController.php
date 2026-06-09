@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cobros_cab;
+use App\Traits\VerificaPermisos;
 
 class Cobros_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/cobranza/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             select 
                 cc.id,
@@ -45,6 +54,11 @@ class Cobros_cabController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $datos = $request->validate([
             'empresa_id'          => 'required',
             'sucursal_id'          => 'required',
@@ -86,6 +100,12 @@ class Cobros_cabController extends Controller
 
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
+
         $cobro = Cobros_cab::find($id);
 
         if (!$cobro) {
@@ -118,6 +138,11 @@ class Cobros_cabController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $cobro = Cobros_cab::find($id);
 
         if (!$cobro) {
@@ -144,6 +169,11 @@ class Cobros_cabController extends Controller
 
     public function confirmar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $cobro = Cobros_cab::find($id);
 
         if (!$cobro) {
@@ -307,7 +337,7 @@ class Cobros_cabController extends Controller
     }
 
     public function anularConfirmado($id)
-    {
+    {//ver como voy a hacer con este
         $cobro = Cobros_cab::find($id);
 
         if (!$cobro) {

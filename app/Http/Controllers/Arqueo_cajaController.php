@@ -7,12 +7,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Arqueo_caja;
 use App\Models\Aperturas_cierres;
+use App\Traits\VerificaPermisos; 
 
 class Arqueo_cajaController extends Controller
 {
-    //funcion read
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/arqueo_caja/';
+    
     public function read(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         try {
 
              $userId = $request->user_id;
@@ -50,6 +58,11 @@ class Arqueo_cajaController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         try {
 
             $request->validate([
@@ -135,6 +148,11 @@ class Arqueo_cajaController extends Controller
 
     public function confirmar($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         try {
 
             // 1. Buscar arqueo por ID (viene de la ruta)
@@ -183,6 +201,11 @@ class Arqueo_cajaController extends Controller
 
     public function anular($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         try {
 
             $arqueo = Arqueo_caja::find($id);

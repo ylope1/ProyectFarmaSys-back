@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Pedidos_vent_cab;
+use App\Traits\VerificaPermisos; 
 
 class Pedidos_vent_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/pedidos_ventas/';
+
     public function read() 
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 pvc.id,
@@ -38,6 +47,10 @@ class Pedidos_vent_cabController extends Controller
     
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
         $datosValidados = $request->validate([
             'pedido_vent_fec'      => 'required',
             'empresa_id'           => 'required|exists:empresas,id',
@@ -61,6 +74,11 @@ class Pedidos_vent_cabController extends Controller
     
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $pedido = Pedidos_vent_cab::find($id);
 
         if (!$pedido) {
@@ -97,28 +115,14 @@ class Pedidos_vent_cabController extends Controller
             'registro' => $pedido
         ], 200);
     }
-    
-    public function destroy($id)
-    {
-        $pedido = Pedidos_vent_cab::find($id);
-
-        if (!$pedido) {
-            return response()->json([
-                'mensaje' => 'Pedido no encontrado',
-                'tipo'    => 'error'
-            ], 404);
-        }
-
-        $pedido->delete();
-
-        return response()->json([
-            'mensaje' => 'Pedido eliminado con éxito',
-            'tipo'    => 'success'
-        ], 200);
-    }
 
     public function anular(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $pedido = Pedidos_vent_cab::find($id);
 
         if (!$pedido) {
@@ -153,6 +157,11 @@ class Pedidos_vent_cabController extends Controller
 
     public function confirmar(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $pedido = Pedidos_vent_cab::find($id);
 
         if (!$pedido) {

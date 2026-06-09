@@ -15,11 +15,20 @@ use App\Models\Deposito;
 use App\Models\Ctas_cobrar;
 use App\Models\Libro_Ventas;
 use App\Models\Clientes;
+use App\Traits\VerificaPermisos; 
 
 class Ventas_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/registrar_ventas/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 vc.*,
@@ -53,6 +62,11 @@ class Ventas_cabController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         // Si venta_cant_cta viene vacío, lo convertimos a null
         if ($request->venta_cant_cta === '') {
         $request->merge(['venta_cant_cta' => null]);
@@ -126,6 +140,11 @@ class Ventas_cabController extends Controller
     }
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $venta = Ventas_cab::find($id);
         if (!$venta) {
             return response()->json([
@@ -176,25 +195,13 @@ class Ventas_cabController extends Controller
         ], 200);
     }
 
-    public function destroy($id)
-    {
-        $venta = Ventas_cab::find($id);
-        if (!$venta) {
-            return response()->json([
-                'mensaje' => 'Registro no encontrado',
-                'tipo'    => 'error'
-            ], 404);
-        }
-
-        $venta->delete();
-        return response()->json([
-            'mensaje' => 'Registro eliminado con éxito',
-            'tipo'    => 'success'
-        ], 200);
-    }
-
     public function anular(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $venta = Ventas_cab::find($id);
         if (!$venta) {
             return response()->json([
@@ -225,6 +232,11 @@ class Ventas_cabController extends Controller
 
     public function confirmar(Request $r, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         DB::beginTransaction();
 
         try {

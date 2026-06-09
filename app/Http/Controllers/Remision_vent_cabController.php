@@ -7,12 +7,21 @@ use App\Models\Remision_vent_cab;
 use App\Models\Remision_vent_det;
 use App\Models\Ventas_cab;
 use App\Models\Ventas_det;
+use App\Traits\VerificaPermisos; 
 use Illuminate\Support\Facades\DB;
 
 class Remision_vent_cabController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/nota_remision/';
+
     public function read()
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
         SELECT 
             rvc.*,
@@ -52,6 +61,11 @@ class Remision_vent_cabController extends Controller
 
     public function store(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         // Convertir campo de llegada vacío a null
         if ($request->remision_vent_fec_ent === '') {
             $request->merge(['remision_vent_fec_ent' => null]);
@@ -124,6 +138,11 @@ class Remision_vent_cabController extends Controller
     }
     public function update(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $remision = Remision_vent_cab::find($id);
 
         if (!$remision) {
@@ -174,6 +193,11 @@ class Remision_vent_cabController extends Controller
 
     public function anular(Request $request, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $remision = Remision_vent_cab::find($id);
 
         if (!$remision) {
@@ -195,7 +219,8 @@ class Remision_vent_cabController extends Controller
     }
 
     public function enviar(Request $r, $id)
-    {
+    { //ver como hago con este permiso
+
         $remision = Remision_vent_cab::find($id);
         if (!$remision) return response()->json(['error'=>'No encontrada'],404);
 
@@ -218,6 +243,11 @@ class Remision_vent_cabController extends Controller
 
     public function confirmar(Request $r, $id)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'confirmar');
+        if ($permiso) {
+            return $permiso;
+        }
+        
         $remision = Remision_vent_cab::find($id);
 
         if (!$remision) {

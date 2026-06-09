@@ -7,11 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Aperturas_cierres;
 use App\Models\Cajas;
+use App\Traits\VerificaPermisos; 
 
 class Aperturas_cierresController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaPermiso = 'movimientos/ventas_cobros/apertura_cierre/';
+
     public function read(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         try {
 
             $userId = $request->user_id;
@@ -48,7 +57,7 @@ class Aperturas_cierresController extends Controller
     }
     
     public function buscarCajaAbierta(Request $request)
-    {
+    {//ver aca como hago con el permiso
         try {
 
             $userId = $request->user_id;
@@ -118,6 +127,11 @@ class Aperturas_cierresController extends Controller
 
     public function storeApertura(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'crear');
+        if ($permiso) {
+            return $permiso;
+        }
+
         try {
 
             $request->validate([
@@ -181,7 +195,7 @@ class Aperturas_cierresController extends Controller
     }
 
     public function cerrarCaja(Request $request)
-    {
+    { //ver aca como hago con el permiso
         try {
 
             $request->validate([
