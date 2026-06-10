@@ -4,11 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\VerificaPermisos;
 
 class Informes_comprasController extends Controller
 {
+    use VerificaPermisos;
+    private $rutaInforme = 'informes/movimientos_compras/compras/';
+
     public function pedidosCompras(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $fechaDesde = $request->fecha_desde;
         $fechaHasta = $request->fecha_hasta;
         $estado = $request->estado;
@@ -78,6 +87,11 @@ class Informes_comprasController extends Controller
 
     public function hojaPreparacionPedido($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $cabecera = DB::select("
             SELECT 
                 pcc.id,
@@ -129,6 +143,11 @@ class Informes_comprasController extends Controller
 
     public function presupuestosCompras(Request $request)
     {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         $fechaDesde = $request->fecha_desde;
         $fechaHasta = $request->fecha_hasta;
         $estado = $request->estado;
@@ -208,6 +227,10 @@ class Informes_comprasController extends Controller
 
     public function hojaPresupuestoCompra($id)
     {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
         $cabecera = DB::select("
             SELECT 
                 prc.id,
