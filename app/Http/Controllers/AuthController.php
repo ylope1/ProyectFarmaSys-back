@@ -54,7 +54,8 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'DEBE INGRESAR USUARIO Y CONTRASEÑA'
+                'message' => 'DEBE INGRESAR USUARIO Y CONTRASEÑA',
+                'tipo'=> 'error'
             ], 422);
         }
 
@@ -62,19 +63,22 @@ class AuthController extends Controller
 
         if ($user == null) {
             return response()->json([
-                'message' => 'USUARIO O CONTRASEÑA INCORRECTA'
+                'message' => 'USUARIO O CONTRASEÑA INCORRECTA',
+                'tipo'=> 'error'
             ], 401);
         }
         if ($user->user_estado !== 'ACTIVO') {
             return response()->json([
-                'message' => 'USUARIO INACTIVO. CONTACTE AL ADMINISTRADOR DEL SISTEMA'
+                'message' => 'USUARIO INACTIVO. CONTACTE AL ADMINISTRADOR DEL SISTEMA',
+                'tipo'=> 'error'
             ], 403);
         }
 
         // Si ya tiene 3 intentos fallidos, queda bloqueado
         if ($user->intentos >= 3) {
             return response()->json([
-                'message' => 'USUARIO BLOQUEADO POR INTENTOS FALLIDOS'
+                'message' => 'USUARIO BLOQUEADO POR INTENTOS FALLIDOS',
+                'tipo'=> 'error'
             ], 401);
         }
 
@@ -85,12 +89,14 @@ class AuthController extends Controller
 
             if ($user->intentos >= 3) {
                 return response()->json([
-                    'message' => 'USUARIO BLOQUEADO POR INTENTOS FALLIDOS'
+                    'message' => 'USUARIO BLOQUEADO POR INTENTOS FALLIDOS',
+                    'tipo'=> 'error'
                 ], 401);
             }
 
             return response()->json([
-                'message' => 'USUARIO O CONTRASEÑA INCORRECTA'
+                'message' => 'USUARIO O CONTRASEÑA INCORRECTA',
+                'tipo'=> 'error'
             ], 401);
         }
 
@@ -100,7 +106,8 @@ class AuthController extends Controller
 
         if ($rol == null) {
             return response()->json([
-                'message' => 'EL USUARIO NO TIENE UN ROL ACTIVO ASIGNADO'
+                'message' => 'EL USUARIO NO TIENE UN ROL ACTIVO ASIGNADO',
+                'tipo'=> 'error'
             ], 403);
         }
 
@@ -175,7 +182,8 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'DEBE INGRESAR SU USUARIO O CORREO ELECTRÓNICO'
+                'message' => 'DEBE INGRESAR SU USUARIO O CORREO ELECTRÓNICO',
+                'tipo'=> 'error'
             ], 422);
         }
 
@@ -185,13 +193,15 @@ class AuthController extends Controller
 
         if ($user == null) {
             return response()->json([
-                'message' => 'NO SE ENCONTRÓ UN USUARIO CON LOS DATOS INGRESADOS'
+                'message' => 'NO SE ENCONTRÓ UN USUARIO CON LOS DATOS INGRESADOS',
+                'tipo'=> 'error'
             ], 404);
         }
 
         if ($user->email == null || $user->email == '') {
             return response()->json([
-                'message' => 'EL USUARIO NO TIENE UN CORREO ELECTRÓNICO REGISTRADO'
+                'message' => 'EL USUARIO NO TIENE UN CORREO ELECTRÓNICO REGISTRADO',
+                'tipo'=> 'error'
             ], 422);
         }
 
@@ -238,13 +248,15 @@ class AuthController extends Controller
 
         if ($registro == null) {
             return response()->json([
-                'message' => 'EL TOKEN DE RECUPERACIÓN NO EXISTE O YA FUE UTILIZADO'
+                'message' => 'EL TOKEN DE RECUPERACIÓN NO EXISTE O YA FUE UTILIZADO',
+                'tipo'=> 'error'
             ], 404);
         }
 
         if (!Hash::check($request->token, $registro->token)) {
             return response()->json([
-                'message' => 'EL TOKEN DE RECUPERACIÓN NO ES VÁLIDO'
+                'message' => 'EL TOKEN DE RECUPERACIÓN NO ES VÁLIDO',
+                'tipo'=> 'error'
             ], 401);
         }
 
@@ -256,7 +268,8 @@ class AuthController extends Controller
                 ->delete();
 
             return response()->json([
-                'message' => 'EL TOKEN DE RECUPERACIÓN HA EXPIRADO'
+                'message' => 'EL TOKEN DE RECUPERACIÓN HA EXPIRADO',
+                'tipo'=> 'error'
             ], 401);
         }
 
@@ -264,7 +277,8 @@ class AuthController extends Controller
 
         if ($user == null) {
             return response()->json([
-                'message' => 'USUARIO NO ENCONTRADO'
+                'message' => 'USUARIO NO ENCONTRADO',
+                'tipo'=> 'error'
             ], 404);
         }
 

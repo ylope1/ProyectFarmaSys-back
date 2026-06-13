@@ -19,42 +19,18 @@ class Orden_comp_detController extends Controller
             return $permiso;
         }
 
-        // Buscar la orden de compra para saber si tiene pedido, presupuesto o ambos
-        $orden_comp_cab = DB::table('orden_comp_cab')->where('id', $id)->first();
-
-        if (!$orden_comp_cab) {
-            return response()->json(['mensaje' => 'Orden de compra no encontrada'], 404);
-        }
-        // Solo pedido
-        if ($orden_comp_cab->pedido_comp_id && !$orden_comp_cab->presup_comp_id) {
-            return DB::select("
-                select 
-                    pcd.pedido_comp_id as pedido_comp_id,
-                    pcd.producto_id,
-                    pcd.pedido_comp_cant as orden_comp_cant,
-                    NULL as orden_comp_costo,
-                    p.prod_desc
-                from pedido_comp_det pcd
-                join productos p on p.id = pcd.producto_id
-                where pcd.pedido_comp_id = ?
-            ", [$orden_comp_cab->pedido_comp_id]);
-        }
-        // Presupuesto (solo o junto con pedido)
-        if ($orden_comp_cab->presup_comp_id) {
-            return DB::select("
-                select 
-                    pcd.presup_comp_id as presup_comp_id,
-                    pcd.producto_id,
-                    pcd.presup_comp_cant as orden_comp_cant,
-                    pcd.presup_comp_costo as orden_comp_costo,
-                    p.prod_desc
-                from presup_comp_det pcd
-                join productos p on p.id = pcd.producto_id
-                where pcd.presup_comp_id = ?
-            ", [$orden_comp_cab->presup_comp_id]);
-        }
-
-        return response()->json(['mensaje' => 'No hay detalles para esta orden de compra'], 404);
+        return DB::select("
+            select 
+                ocd.orden_comp_id,
+                ocd.producto_id,
+                ocd.orden_comp_cant,
+                ocd.orden_comp_costo,
+                p.prod_desc
+            from orden_comp_det ocd
+            join productos p on p.id = ocd.producto_id
+            where ocd.orden_comp_id = ?
+            order by p.prod_desc
+        ", [$id]);
     }
 
     public function store(Request $request){
@@ -69,6 +45,37 @@ class Orden_comp_detController extends Controller
             "orden_comp_cant"=> "required",
             "orden_comp_costo"=> "required"
         ]);
+
+        $orden = DB::table('orden_comp_cab')
+            ->where('id', $request->orden_comp_id)
+            ->first();
+
+        if (!$orden) {
+            return response()->json([
+                'mensaje' => 'Orden de compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($orden->orden_comp_estado != 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede agregar detalle a una orden en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 422);
+        }
+
+        $existe = DB::table('orden_comp_det')
+            ->where('orden_comp_id', $request->orden_comp_id)
+            ->where('producto_id', $request->producto_id)
+            ->exists();
+
+        if ($existe) {
+            return response()->json([
+                'mensaje' => 'El producto ya existe en el detalle. Debe modificar el registro existente.',
+                'tipo' => 'error'
+            ], 422);
+        }
+
         $orden_comp_det = Orden_comp_det::create($datosValidados);
         return response()->json([
             'mensaje'=> 'Registro creado con éxito',
@@ -84,9 +91,27 @@ class Orden_comp_detController extends Controller
         }
 
         $datosValidados = $request->validate([
-            "orden_comp_cant"=> "required",
-            "orden_comp_costo"=> "required"
+            "orden_comp_cant"=> "required|numeric|min:1",
+            "orden_comp_costo"=> "required|numeric|min:0"
         ]);
+
+        $orden = DB::table('orden_comp_cab')
+            ->where('id', $orden_comp_id)
+            ->first();
+
+        if (!$orden) {
+            return response()->json([
+                'mensaje' => 'Orden de compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($orden->orden_comp_estado != 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede modificar detalle de una orden en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 422);
+        }
 
         $orden_comp_det = DB::table('orden_comp_det')
             ->where('orden_comp_id', $orden_comp_id)
@@ -96,7 +121,11 @@ class Orden_comp_detController extends Controller
                 'orden_comp_costo' => $datosValidados['orden_comp_costo']
             ]);
 
-        $orden_comp_det = DB::select("select * from orden_comp_det where orden_comp_id = ? and producto_id = ?", [$orden_comp_id, $producto_id]);
+        $orden_comp_det = DB::select(
+            "select * 
+            from orden_comp_det 
+            where orden_comp_id = ? and producto_id = ?
+            ", [$orden_comp_id, $producto_id]);
 
         return response()->json([
             'mensaje'=> 'Registro modificado con éxito',
@@ -110,6 +139,25 @@ class Orden_comp_detController extends Controller
         if ($permiso) {
             return $permiso;
         }
+
+        $orden = DB::table('orden_comp_cab')
+            ->where('id', $orden_comp_id)
+            ->first();
+
+        if (!$orden) {
+            return response()->json([
+                'mensaje' => 'Orden de compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($orden->orden_comp_estado != 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede eliminar detalle de una orden en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 422);
+        }
+
         DB::table('orden_comp_det')
             ->where('orden_comp_id', $orden_comp_id)
             ->where('producto_id', $producto_id)

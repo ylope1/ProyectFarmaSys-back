@@ -89,6 +89,18 @@ use App\Http\Controllers\AuthController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+//seguridad login
+Route::post('login',[AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::get('logout', [AuthController::class, 'logout']);
+
+//seguridad usuarios
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
 //referenciales compras
 Route::middleware('auth:sanctum')->group(function () {
     Route::get("proveedore/read",[ProveedoreController::class,"read"]);
@@ -434,19 +446,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 //movimientos informes ventas y cobros
 
-
-//seguridad usuarios
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-//seguridad login
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::post('login',[AuthController::class, 'login']);
-    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('reset-password', [AuthController::class, 'resetPassword']);
-    Route::get('logout', [AuthController::class, 'logout']);
-});
 
 Route::get("stock/read",[StockController::class,"read"]);
 Route::post("stock/create",[StockController::class,"store"]);
