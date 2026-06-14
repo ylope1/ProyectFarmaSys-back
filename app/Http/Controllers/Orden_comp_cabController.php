@@ -36,7 +36,7 @@ class Orden_comp_cabController extends Controller
                 ' FECHA PEDIDO: ' || to_char(ped.pedido_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
                 ' (' || ped.pedido_comp_estado || ')' as pedido,
                 'PRESUPUESTO NRO:' || to_char(occ.presup_comp_id, '0000000') || 
-                ' FECHA PRESUPUESTO: ' || to_char(pre.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') || 
+                ' FECHA PRESUPUESTO: ' || coalesce(to_char(pre.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss'), '') || 
                 ' (' || pre.presup_comp_estado || ')' as presupuesto
             from orden_comp_cab occ
             join proveedores p on p.id = occ.proveedor_id
@@ -448,7 +448,7 @@ class Orden_comp_cabController extends Controller
 
         try {
             $orden_comp_cab->orden_comp_estado = 'APROBADO';
-            $orden_comp_cab->orden_comp_fec_aprob;
+            $orden_comp_cab->orden_comp_fec_aprob = now();
             $orden_comp_cab->user_id = auth()->user()->id;
             $orden_comp_cab->save();
 

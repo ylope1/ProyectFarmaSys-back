@@ -443,6 +443,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("informes/compras/pedidos/preparacion/{id}",[Informes_comprasController::class, "hojaPreparacionPedido"]);
     Route::post("informes/compras/presupuestos", [Informes_comprasController::class, "presupuestosCompras"]);
     Route::get("informes/compras/presupuestos/hoja/{id}", [Informes_comprasController::class, "hojaPresupuestoCompra"]);
+    Route::post("informes/compras/ordenes", [Informes_comprasController::class, "ordenesCompras"]);
+    Route::get("informes/compras/ordenes/hoja/{id}", [Informes_comprasController::class, "hojaOrdenCompra"]);
+    
 });
 //movimientos informes ventas y cobros
 

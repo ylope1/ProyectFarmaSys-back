@@ -486,7 +486,7 @@ class Presup_comp_cabController extends Controller
                 prc.id AS presup_comp_id,
                 'PRESUPUESTO NRO:' || to_char(prc.id, '0000000') || 
                 ' - PROVEEDOR: ' || pr.proveedor_desc ||
-                ' - FECHA APROB: ' || to_char(prc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') ||
+                ' - FECHA APROB: ' || coalesce(to_char(prc.presup_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss'), '') ||
                 ' (' || prc.presup_comp_estado || ')' AS presupuesto
             FROM presup_comp_cab prc 
             JOIN empresas e ON e.id = prc.empresa_id
