@@ -22,12 +22,6 @@ class Notas_comp_cab extends Model
         'nota_comp_fact',
         'nota_comp_timbrado',
         'nota_comp_fec',
-        'monto_exentas',
-        'monto_grav_5',
-        'monto_grav_10',
-        'monto_iva_5',
-        'monto_iva_10',
-        'monto_general',
         'nota_comp_estado',
     ];
 

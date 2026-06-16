@@ -572,31 +572,65 @@ class Compras_cabController extends Controller
     }
     public function buscar(Request $r)
     {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'mensaje' => 'Usuario no autenticado.',
+                'tipo' => 'error'
+            ], 401);
+        }
+
+        $buscar = $r->buscar ?? '';
+
         return DB::select("SELECT 
-            cc.id,
-            to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') AS compra_fec,
-            cc.compra_estado,
-            cc.empresa_id,  
-            e.empresa_desc,
-            cc.sucursal_id, 
-            s.suc_desc,
-            cc.proveedor_id,
-            p.proveedor_desc,
-            cc.user_id, 
-            u.name AS encargado,
-            cc.id as compra_id,
-            'COMPRA NRO:' || to_char(cc.id, '0000000') || 
-            ' FECHA: ' || to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') || 
-            ' (' || cc.compra_estado || ')' AS compra
-        FROM compras_cab cc 
-        JOIN empresas e ON e.id = cc.empresa_id
-        JOIN sucursales s ON s.id = cc.sucursal_id 
-        JOIN proveedores p ON p.id = cc.proveedor_id
-        JOIN users u ON u.id = cc.user_id 
-        WHERE cc.compra_estado = 'RECIBIDO' 
-        AND cc.user_id = ? 
-        AND u.name ILIKE ?
-        ", [$r->user_id, '%' . $r->name . '%']);
+                cc.id,
+                cc.id AS compra_id,
+                to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') AS compra_fec,
+                cc.compra_estado,
+                cc.compra_fact,
+                cc.compra_timbrado,
+                cc.tipo_fact_id,
+                tf.tipo_fact_desc,
+                cc.empresa_id,  
+                e.empresa_desc,
+                cc.sucursal_id, 
+                s.suc_desc,
+                cc.deposito_id,
+                d.deposito_desc,
+                cc.proveedor_id,
+                p.proveedor_desc,
+                p.proveedor_ruc,
+                cc.user_id, 
+                u.name AS encargado,
+                'COMPRA NRO: ' || to_char(cc.id, '0000000') || 
+                ' - FACTURA: ' || cc.compra_fact ||
+                ' - PROVEEDOR: ' || p.proveedor_desc ||
+                ' - FECHA: ' || to_char(cc.compra_fec, 'dd/mm/yyyy HH24:mi:ss') || 
+                ' - ESTADO: ' || cc.compra_estado AS compra
+            FROM compras_cab cc 
+            JOIN empresas e ON e.id = cc.empresa_id
+            JOIN sucursales s ON s.id = cc.sucursal_id 
+            JOIN depositos d ON d.id = cc.deposito_id
+            JOIN proveedores p ON p.id = cc.proveedor_id
+            JOIN users u ON u.id = cc.user_id
+            JOIN tipo_fact tf ON tf.id = cc.tipo_fact_id
+            WHERE cc.compra_estado = 'RECIBIDO'
+            AND (
+                CAST(cc.id AS TEXT) ILIKE ?
+                OR cc.compra_fact ILIKE ?
+                OR p.proveedor_desc ILIKE ?
+                OR p.proveedor_ruc ILIKE ?
+                OR u.name ILIKE ?
+            )
+            ORDER BY cc.id DESC
+        ", [
+            '%' . $buscar . '%',
+            '%' . $buscar . '%',
+            '%' . $buscar . '%',
+            '%' . $buscar . '%',
+            '%' . $buscar . '%'
+        ]);
     }
 
     private function obtenerFuncionarioPorUsuario($userId) //este vamos a trabajar desde el front nomas
