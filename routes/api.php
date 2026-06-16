@@ -445,11 +445,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("informes/compras/presupuestos/hoja/{id}", [Informes_comprasController::class, "hojaPresupuestoCompra"]);
     Route::post("informes/compras/ordenes", [Informes_comprasController::class, "ordenesCompras"]);
     Route::get("informes/compras/ordenes/hoja/{id}", [Informes_comprasController::class, "hojaOrdenCompra"]);
-    
+    Route::post("informes/compras/compras", [Informes_comprasController::class, "compras"]);
+    Route::get("informes/compras/hoja_compra/{id}", [Informes_comprasController::class, "hojaCompra"]);
 });
+
 //movimientos informes ventas y cobros
-
-
 Route::get("stock/read",[StockController::class,"read"]);
 Route::post("stock/create",[StockController::class,"store"]);
 Route::put("stock/update/{deposito_id}/{sucursal_id}/{producto_id}",[StockController::class,"update"]);

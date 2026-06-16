@@ -434,7 +434,260 @@ class Informes_comprasController extends Controller
         ], 200);
     }
 
+    public function compras(Request $request)
+    {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
 
+        $fechaDesde = $request->fecha_desde;
+        $fechaHasta = $request->fecha_hasta;
+        $estado = $request->estado;
+        $empresaId = $request->empresa_id;
+        $sucursalId = $request->sucursal_id;
+        $proveedorId = $request->proveedor_id;
+        $tipoFactId = $request->tipo_fact_id;
+        $compraId = $request->compra_id;
+        $nroFactura = $request->compra_fact;
+
+        $sql = "
+            SELECT 
+                cc.id,
+                to_char(cc.compra_fec, 'DD/MM/YYYY HH24:MI:SS') AS compra_fec,
+                COALESCE(to_char(cc.compra_fec_recep, 'DD/MM/YYYY HH24:MI:SS'), '') AS compra_fec_recep,
+                cc.compra_estado,
+                cc.compra_fact,
+                cc.compra_timbrado,
+                cc.compra_cant_cta,
+                cc.compra_ifv,
+                pr.proveedor_desc,
+                pr.proveedor_ruc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                u.name AS encargado,
+                tf.tipo_fact_desc,
+                cc.orden_comp_id,
+                COUNT(cd.producto_id) AS cantidad_items,
+                COALESCE(SUM(cd.compra_cant), 0) AS total_cantidad,
+                COALESCE(SUM(cd.compra_cant * cd.compra_costo), 0) AS total_compra,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.impuesto_id = 3 THEN cd.compra_cant * cd.compra_costo
+                        ELSE 0
+                    END
+                ), 0) AS total_exentas,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.impuesto_id = 2 THEN cd.compra_cant * cd.compra_costo
+                        ELSE 0
+                    END
+                ), 0) AS total_grav_5,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.impuesto_id = 1 THEN cd.compra_cant * cd.compra_costo
+                        ELSE 0
+                    END
+                ), 0) AS total_grav_10,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.impuesto_id = 2 THEN (cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.05)
+                        ELSE 0
+                    END
+                ), 0) AS total_iva_5,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.impuesto_id = 1 THEN (cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.10)
+                        ELSE 0
+                    END
+                ), 0) AS total_iva_10
+
+            FROM compras_cab cc
+            JOIN proveedores pr ON pr.id = cc.proveedor_id
+            JOIN empresas e ON e.id = cc.empresa_id
+            JOIN sucursales s ON s.id = cc.sucursal_id
+            JOIN depositos d ON d.id = cc.deposito_id
+            JOIN users u ON u.id = cc.user_id
+            JOIN tipo_fact tf ON tf.id = cc.tipo_fact_id
+            LEFT JOIN compras_det cd ON cd.compra_id = cc.id
+            LEFT JOIN productos p ON p.id = cd.producto_id
+            WHERE 1=1
+        ";
+
+        $parametros = [];
+
+        if ($fechaDesde && $fechaHasta) {
+            $sql .= " AND cc.compra_fec::date BETWEEN ? AND ? ";
+            $parametros[] = $fechaDesde;
+            $parametros[] = $fechaHasta;
+        }
+
+        if ($estado) {
+            $sql .= " AND cc.compra_estado = ? ";
+            $parametros[] = $estado;
+        }
+
+        if ($empresaId) {
+            $sql .= " AND cc.empresa_id = ? ";
+            $parametros[] = $empresaId;
+        }
+
+        if ($sucursalId) {
+            $sql .= " AND cc.sucursal_id = ? ";
+            $parametros[] = $sucursalId;
+        }
+
+        if ($proveedorId) {
+            $sql .= " AND cc.proveedor_id = ? ";
+            $parametros[] = $proveedorId;
+        }
+
+        if ($tipoFactId) {
+            $sql .= " AND cc.tipo_fact_id = ? ";
+            $parametros[] = $tipoFactId;
+        }
+
+        if ($compraId) {
+            $sql .= " AND cc.id = ? ";
+            $parametros[] = $compraId;
+        }
+
+        if ($nroFactura) {
+            $sql .= " AND cc.compra_fact ILIKE ? ";
+            $parametros[] = '%' . $nroFactura . '%';
+        }
+
+        $sql .= "
+            GROUP BY 
+                cc.id,
+                cc.compra_fec,
+                cc.compra_fec_recep,
+                cc.compra_estado,
+                cc.compra_fact,
+                cc.compra_timbrado,
+                cc.compra_cant_cta,
+                cc.compra_ifv,
+                pr.proveedor_desc,
+                pr.proveedor_ruc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                u.name,
+                tf.tipo_fact_desc,
+                cc.orden_comp_id
+            ORDER BY cc.id DESC
+        ";
+
+        $datos = DB::select($sql, $parametros);
+
+        return response()->json($datos, 200);
+    }
+
+    public function hojaCompra($id)
+    {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
+        $cabecera = DB::select("
+            SELECT 
+                cc.id,
+                to_char(cc.compra_fec, 'DD/MM/YYYY HH24:MI:SS') AS compra_fec,
+                COALESCE(to_char(cc.compra_fec_recep, 'DD/MM/YYYY HH24:MI:SS'), '') AS compra_fec_recep,
+                cc.compra_estado,
+                cc.compra_fact,
+                cc.compra_timbrado,
+                cc.compra_cant_cta,
+                cc.compra_ifv,
+                pr.proveedor_desc,
+                pr.proveedor_ruc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                u.name AS encargado,
+                tf.tipo_fact_desc,
+                cc.orden_comp_id
+            FROM compras_cab cc
+            JOIN proveedores pr ON pr.id = cc.proveedor_id
+            JOIN empresas e ON e.id = cc.empresa_id
+            JOIN sucursales s ON s.id = cc.sucursal_id
+            JOIN depositos d ON d.id = cc.deposito_id
+            JOIN users u ON u.id = cc.user_id
+            JOIN tipo_fact tf ON tf.id = cc.tipo_fact_id
+            WHERE cc.id = ?
+            LIMIT 1
+        ", [$id]);
+
+        if (empty($cabecera)) {
+            return response()->json([
+                'mensaje' => 'No se encontró la compra con el número ingresado',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        $detalles = DB::select("
+            SELECT 
+                p.id AS producto_id,
+                p.prod_desc,
+                cd.compra_cant,
+                cd.compra_costo,
+                ti.id AS impuesto_id,
+                ti.impuesto_desc,
+                (cd.compra_cant * cd.compra_costo) AS subtotal,
+
+                CASE 
+                    WHEN p.impuesto_id = 3 THEN cd.compra_cant * cd.compra_costo
+                    ELSE 0
+                END AS exentas,
+
+                CASE 
+                    WHEN p.impuesto_id = 2 THEN cd.compra_cant * cd.compra_costo
+                    ELSE 0
+                END AS grav_5,
+
+                CASE 
+                    WHEN p.impuesto_id = 1 THEN cd.compra_cant * cd.compra_costo
+                    ELSE 0
+                END AS grav_10,
+
+                CASE 
+                    WHEN p.impuesto_id = 2 THEN (cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.05)
+                    ELSE 0
+                END AS iva_5,
+
+                CASE 
+                    WHEN p.impuesto_id = 1 THEN (cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.10)
+                    ELSE 0
+                END AS iva_10
+
+            FROM compras_det cd
+            JOIN productos p ON p.id = cd.producto_id
+            JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
+            WHERE cd.compra_id = ?
+            ORDER BY p.prod_desc
+        ", [$id]);
+
+        if (empty($detalles)) {
+            return response()->json([
+                'mensaje' => 'La compra seleccionada no tiene productos cargados',
+                'tipo' => 'warning'
+            ], 404);
+        }
+
+        return response()->json([
+            'cabecera' => $cabecera[0],
+            'detalles' => $detalles
+        ], 200);
+    }
+
+    
 }
 
 

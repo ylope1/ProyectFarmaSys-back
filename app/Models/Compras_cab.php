@@ -22,12 +22,6 @@ class Compras_cab extends Model
         'compra_fec_recep',
         'compra_cant_cta',
         'compra_ifv',
-        'monto_exentas',
-        'monto_grav_5',
-        'monto_grav_10',
-        'monto_iva_5',
-        'monto_iva_10',
-        'monto_general',
         'compra_estado'
     ];
     protected $table = 'compras_cab';

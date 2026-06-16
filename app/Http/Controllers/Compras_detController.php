@@ -12,7 +12,8 @@ class Compras_detController extends Controller
     use VerificaPermisos;
     private $rutaPermiso = 'movimientos/compras/compras/';
     
-    public function read($id){
+    public function read($id)
+    {
         $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
         if ($permiso) {
             return $permiso;
@@ -20,15 +21,47 @@ class Compras_detController extends Controller
 
         return DB::select("
             SELECT 
-            cd.*, 
-            p.prod_desc,
-            ti.id as impuesto_id, 
-            ti.impuesto_desc
+                cd.compra_id,
+                cd.producto_id,
+                p.prod_desc,
+                cd.compra_cant,
+                cd.compra_costo,
+                ti.id AS impuesto_id,
+                ti.impuesto_desc,
+
+                (cd.compra_cant * cd.compra_costo) AS subtotal,
+
+                CASE 
+                    WHEN p.impuesto_id = 1 THEN ROUND(((cd.compra_cant * cd.compra_costo) / 1.10))
+                    ELSE 0
+                END AS grav_10,
+
+                CASE 
+                    WHEN p.impuesto_id = 1 THEN ROUND((cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.10))
+                    ELSE 0
+                END AS iva_10,
+
+                CASE 
+                    WHEN p.impuesto_id = 2 THEN ROUND(((cd.compra_cant * cd.compra_costo) / 1.05))
+                    ELSE 0
+                END AS grav_5,
+
+                CASE 
+                    WHEN p.impuesto_id = 2 THEN ROUND((cd.compra_cant * cd.compra_costo) - ((cd.compra_cant * cd.compra_costo) / 1.05))
+                    ELSE 0
+                END AS iva_5,
+
+                CASE 
+                    WHEN p.impuesto_id = 3 THEN ROUND((cd.compra_cant * cd.compra_costo))
+                    ELSE 0
+                END AS exentas
+
             FROM compras_det cd
             JOIN productos p ON p.id = cd.producto_id
             JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
-            WHERE cd.compra_id = $id;"
-        );
+            WHERE cd.compra_id = ?
+            ORDER BY p.prod_desc
+        ", [$id]);
     }
 
     public function store(Request $request){
@@ -44,6 +77,36 @@ class Compras_detController extends Controller
             "compra_costo"  => "required|numeric|min:0"
         ]);
 
+        $compra = DB::table('compras_cab')
+            ->where('id', $datosValidados['compra_id'])
+            ->first();
+
+        if (!$compra) {
+            return response()->json([
+                'mensaje' => 'Compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($compra->compra_estado !== 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede agregar detalle a compras en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $existe = DB::table('compras_det')
+            ->where('compra_id', $datosValidados['compra_id'])
+            ->where('producto_id', $datosValidados['producto_id'])
+            ->exists();
+
+        if ($existe) {
+            return response()->json([
+                'mensaje' => 'El producto ya se encuentra agregado en el detalle de la compra',
+                'tipo' => 'error'
+            ], 400);
+        }
+
         $compras_det = Compras_det::create($datosValidados);
 
         return response()->json([
@@ -57,6 +120,36 @@ class Compras_detController extends Controller
         $permiso = $this->verificarPermiso($this->rutaPermiso, 'modificar');
         if ($permiso) {
             return $permiso;
+        }
+
+        $compra = DB::table('compras_cab')
+            ->where('id', $compra_id)
+            ->first();
+
+        if (!$compra) {
+            return response()->json([
+                'mensaje' => 'Compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($compra->compra_estado !== 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede modificar detalle de compras en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $detalle = DB::table('compras_det')
+            ->where('compra_id', $compra_id)
+            ->where('producto_id', $producto_id)
+            ->first();
+
+        if (!$detalle) {
+            return response()->json([
+                'mensaje' => 'Detalle de compra no encontrado',
+                'tipo' => 'error'
+            ], 404);
         }
 
         $datosValidados = $request->validate([
@@ -88,6 +181,36 @@ class Compras_detController extends Controller
         $permiso = $this->verificarPermiso($this->rutaPermiso, 'anular'); //aca deberia ser borrar pero no tengo ese permiso en la tabla, asi que uso anular
         if ($permiso) {
             return $permiso;
+        }
+        
+        $compra = DB::table('compras_cab')
+            ->where('id', $compra_id)
+            ->first();
+
+        if (!$compra) {
+            return response()->json([
+                'mensaje' => 'Compra no encontrada',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($compra->compra_estado !== 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se puede eliminar detalle de compras en estado PENDIENTE',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $detalle = DB::table('compras_det')
+            ->where('compra_id', $compra_id)
+            ->where('producto_id', $producto_id)
+            ->first();
+
+        if (!$detalle) {
+            return response()->json([
+                'mensaje' => 'Detalle de compra no encontrado',
+                'tipo' => 'error'
+            ], 404);
         }
         
         DB::table('compras_det')

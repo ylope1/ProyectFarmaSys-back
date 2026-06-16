@@ -69,7 +69,7 @@ class Orden_comp_cabController extends Controller
             'presup_comp_id' => 'required|exists:presup_comp_cab,id',
             'tipo_fact_id' => 'required|exists:tipo_fact,id',
             'orden_comp_fec' => 'required',
-            'orden_comp_ifv' => 'required'
+            'orden_comp_ifv' => 'required',
         ]);
 
         $funcionario = DB::table('funcionarios')
@@ -472,32 +472,53 @@ class Orden_comp_cabController extends Controller
 
     public function buscar(Request $r)
     {
+        $permiso = $this->verificarPermiso($this->rutaPermiso, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
         return DB::select("
             SELECT 
                 occ.id,
                 to_char(occ.orden_comp_fec, 'dd/mm/yyyy HH24:mi:ss') AS orden_comp_fec,
                 to_char(occ.orden_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') AS orden_comp_fec_aprob,
                 occ.orden_comp_estado,
+
                 occ.empresa_id,  
                 e.empresa_desc,
+
                 occ.sucursal_id, 
                 s.suc_desc,
+
                 occ.proveedor_id,
                 pr.proveedor_desc,
+
                 occ.user_id,
                 u.name AS name,
+
                 occ.pedido_comp_id,
                 occ.presup_comp_id,
                 occ.id AS orden_comp_id,
+
+                occ.tipo_fact_id,
+                tf.tipo_fact_desc,
+
+                occ.orden_comp_ifv,
+
                 'ORDEN NRO:' || to_char(occ.id, '0000000') || 
                 ' - PROVEEDOR: ' || pr.proveedor_desc ||
+                ' - CONDICIÓN: ' || tf.tipo_fact_desc ||
+                ' - IFV: ' || COALESCE(occ.orden_comp_ifv::text, '0') ||
                 ' - FECHA APROB: ' || to_char(occ.orden_comp_fec_aprob, 'dd/mm/yyyy HH24:mi:ss') ||
                 ' (' || occ.orden_comp_estado || ')' AS orden
+
             FROM orden_comp_cab occ 
             JOIN empresas e ON e.id = occ.empresa_id
             JOIN sucursales s ON s.id = occ.sucursal_id 
             JOIN proveedores pr ON pr.id = occ.proveedor_id
-            JOIN users u ON u.id = occ.user_id 
+            JOIN users u ON u.id = occ.user_id
+            JOIN tipo_fact tf ON tf.id = occ.tipo_fact_id
+
             WHERE occ.orden_comp_estado = 'APROBADO'
             AND (
                 CAST(occ.id AS TEXT) ILIKE ?
