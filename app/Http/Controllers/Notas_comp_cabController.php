@@ -71,7 +71,7 @@ class Notas_comp_cabController extends Controller
             'nota_comp_tipo' => 'required|in:NC,ND',
             'nota_comp_fact' => 'required|string|max:50',
             'nota_comp_timbrado' => 'required|integer',
-            'nota_comp_fec' => 'required|date',
+            'nota_comp_fec' => 'required',
         ]);
 
         return DB::transaction(function () use ($datos, $user) {
@@ -172,7 +172,7 @@ class Notas_comp_cabController extends Controller
         $datos = $request->validate([
             'nota_comp_fact' => 'required|string|max:50',
             'nota_comp_timbrado' => 'required|integer',
-            'nota_comp_fec' => 'required|date',
+            'nota_comp_fec' => 'required',
         ]);
 
         $existeDocumento = Notas_comp_cab::where('id', '<>', $id)
@@ -386,9 +386,7 @@ class Notas_comp_cabController extends Controller
                 'lib_comp_iva_5' => $monto_iva_5,
                 'lib_comp_exentas' => $monto_exentas,
                 'proveedor_id' => $proveedor->id,
-                'proveedor_desc' => $proveedor->proveedor_desc ?? '',
-                'impuesto_id' => $primerProducto->impuesto_id ?? null,
-                'impuesto_desc' => $primerProducto->impuesto_desc ?? '',
+                'proveedor_desc' => $proveedor->proveedor_desc
             ]);
 
             if ((int)$compra->tipo_fact_id === 7) {

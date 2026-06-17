@@ -28,7 +28,7 @@ class Notas_comp_detController extends Controller
             FROM notas_comp_det ncd
             JOIN productos p ON p.id = ncd.producto_id
             JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
-            WHERE ncd.nota_comp_id = ?;
+            WHERE ncd.nota_comp_id = ?
             ORDER BY p.prod_desc
         ", [$id]);
     }

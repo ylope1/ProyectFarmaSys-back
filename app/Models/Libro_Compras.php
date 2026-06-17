@@ -26,8 +26,6 @@ class Libro_Compras extends Model
         'lib_comp_exentas',
         'proveedor_id',
         'proveedor_desc',
-        'impuesto_id',
-        'impuesto_desc',
     ];
 
 }
