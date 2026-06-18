@@ -250,128 +250,179 @@ class Notas_comp_cabController extends Controller
 
         $user = auth()->user();
 
-        return DB::transaction(function () use ($id, $user) {
+        if (!$user) {
+            return response()->json([
+                'mensaje' => 'Usuario no autenticado.',
+                'tipo' => 'error'
+            ], 401);
+        }
 
-            $nota = Notas_comp_cab::find($id);
+        $nota = Notas_comp_cab::find($id);
 
-            if (!$nota) {
+        if (!$nota) {
+            return response()->json([
+                'mensaje' => 'Nota no encontrada.',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        if ($nota->nota_comp_estado !== 'PENDIENTE') {
+            return response()->json([
+                'mensaje' => 'Solo se pueden confirmar notas en estado PENDIENTE.',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $compra = Compras_cab::find($nota->compra_id);
+
+        if (!$compra || $compra->compra_estado !== 'RECIBIDO') {
+            return response()->json([
+                'mensaje' => 'La compra origen debe estar en estado RECIBIDO.',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $proveedor = Proveedore::find($nota->proveedor_id);
+
+        if (!$proveedor) {
+            return response()->json([
+                'mensaje' => 'Proveedor no encontrado.',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $detalles = Notas_comp_det::where('nota_comp_id', $nota->id)->get();
+
+        if ($detalles->isEmpty()) {
+            return response()->json([
+                'mensaje' => 'No se puede confirmar una nota sin detalle.',
+                'tipo' => 'error'
+            ], 400);
+        }
+
+        $monto_grav_5 = 0;
+        $monto_grav_10 = 0;
+        $monto_iva_5 = 0;
+        $monto_iva_10 = 0;
+        $monto_exentas = 0;
+        $movimientosStock = [];
+
+        foreach ($detalles as $det) {
+            $producto = DB::table('productos as p')
+                ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
+                ->where('p.id', $det->producto_id)
+                ->select('p.id', 'p.prod_desc', 'ti.id as impuesto_id', 'ti.impuesto_desc')
+                ->first();
+
+            if (!$producto) {
                 return response()->json([
-                    'mensaje' => 'Nota no encontrada.',
-                    'tipo' => 'error'
-                ], 404);
-            }
-
-            if ($nota->nota_comp_estado !== 'PENDIENTE') {
-                return response()->json([
-                    'mensaje' => 'Solo se pueden confirmar notas en estado PENDIENTE.',
+                    'mensaje' => 'Uno de los productos del detalle no existe.',
                     'tipo' => 'error'
                 ], 400);
             }
 
-            $compra = Compras_cab::find($nota->compra_id);
+            $subtotal = $det->compra_cant * $det->compra_costo;
 
-            if (!$compra || $compra->compra_estado !== 'RECIBIDO') {
+            if ((int)$producto->impuesto_id === 1) {
+                $base10 = $subtotal / 1.10;
+                $iva10 = $subtotal - $base10;
+
+                $monto_grav_10 += $base10;
+                $monto_iva_10 += $iva10;
+            } elseif ((int)$producto->impuesto_id === 2) {
+                $base5 = $subtotal / 1.05;
+                $iva5 = $subtotal - $base5;
+
+                $monto_grav_5 += $base5;
+                $monto_iva_5 += $iva5;
+            } else {
+                $monto_exentas += $subtotal;
+            }
+
+            $stock = Stock::where('deposito_id', $nota->deposito_id)
+                ->where('sucursal_id', $nota->sucursal_id)
+                ->where('producto_id', $det->producto_id)
+                ->first();
+
+            if (!$stock) {
                 return response()->json([
-                    'mensaje' => 'La compra origen debe estar en estado RECIBIDO.',
+                    'mensaje' => 'No existe stock para el producto: ' . $producto->prod_desc,
                     'tipo' => 'error'
                 ], 400);
             }
 
-            $detalles = Notas_comp_det::where('nota_comp_id', $nota->id)->get();
-
-            if ($detalles->isEmpty()) {
+            if ($nota->nota_comp_tipo === 'NC' && $stock->stock_cant_exist < $det->compra_cant) {
                 return response()->json([
-                    'mensaje' => 'No se puede confirmar una nota sin detalle.',
+                    'mensaje' => 'Stock insuficiente para aplicar la nota de crédito del producto: ' . $producto->prod_desc,
                     'tipo' => 'error'
                 ], 400);
             }
 
-            $monto_grav_5 = 0;
-            $monto_grav_10 = 0;
-            $monto_iva_5 = 0;
-            $monto_iva_10 = 0;
-            $monto_exentas = 0;
+            $movimientosStock[] = [
+                'stock' => $stock,
+                'cantidad' => $det->compra_cant,
+                'producto' => $producto
+            ];
+        }
 
-            foreach ($detalles as $det) {
-                $producto = DB::table('productos as p')
-                    ->join('tipo_impuestos as ti', 'p.impuesto_id', '=', 'ti.id')
-                    ->where('p.id', $det->producto_id)
-                    ->select('p.id', 'p.prod_desc', 'ti.id as impuesto_id', 'ti.impuesto_desc')
-                    ->first();
+        $monto_general = $monto_exentas + $monto_grav_5 + $monto_grav_10 + $monto_iva_5 + $monto_iva_10;
 
-                if (!$producto) {
-                    return response()->json([
-                        'mensaje' => 'Uno de los productos del detalle no existe.',
-                        'tipo' => 'error'
-                    ], 400);
-                }
+        if ($monto_general <= 0) {
+            return response()->json([
+                'mensaje' => 'El monto total de la nota debe ser mayor a cero.',
+                'tipo' => 'error'
+            ], 400);
+        }
 
-                $subtotal = $det->compra_cant * $det->compra_costo;
+        $cuentas = Ctas_pagar::where('compra_id', $nota->compra_id)->get();
 
-                if ((int)$producto->impuesto_id === 1) {
-                    $base10 = $subtotal / 1.10;
-                    $iva10 = $subtotal - $base10;
+        if ((int)$compra->tipo_fact_id === 7 && $cuentas->isEmpty()) {
+            return response()->json([
+                'mensaje' => 'La compra es a crédito, pero no posee cuentas a pagar generadas.',
+                'tipo' => 'error'
+            ], 400);
+        }
 
-                    $monto_grav_10 += $base10;
-                    $monto_iva_10 += $iva10;
-                } elseif ((int)$producto->impuesto_id === 2) {
-                    $base5 = $subtotal / 1.05;
-                    $iva5 = $subtotal - $base5;
+        if ($nota->nota_comp_tipo === 'NC' && !$cuentas->isEmpty()) {
+            $saldoTotal = $cuentas->sum('saldo');
 
-                    $monto_grav_5 += $base5;
-                    $monto_iva_5 += $iva5;
-                } else {
-                    $monto_exentas += $subtotal;
-                }
+            if ($saldoTotal < $monto_general) {
+                return response()->json([
+                    'mensaje' => 'El monto de la nota de crédito supera el saldo pendiente de las cuentas a pagar.',
+                    'tipo' => 'error'
+                ], 400);
+            }
+        }
 
-                $stock = Stock::where('deposito_id', $nota->deposito_id)
-                    ->where('sucursal_id', $nota->sucursal_id)
-                    ->where('producto_id', $det->producto_id)
-                    ->first();
+        return DB::transaction(function () use (
+            $nota,
+            $compra,
+            $proveedor,
+            $user,
+            $movimientosStock,
+            $cuentas,
+            $monto_exentas,
+            $monto_grav_5,
+            $monto_grav_10,
+            $monto_iva_5,
+            $monto_iva_10,
+            $monto_general
+        ) {
 
-                if (!$stock) {
-                    return response()->json([
-                        'mensaje' => 'No existe stock para el producto: ' . $producto->prod_desc,
-                        'tipo' => 'error'
-                    ], 400);
-                }
+            foreach ($movimientosStock as $mov) {
+                $stock = $mov['stock'];
 
                 if ($nota->nota_comp_tipo === 'NC') {
-                    if ($stock->stock_cant_exist < $det->compra_cant) {
-                        return response()->json([
-                            'mensaje' => 'Stock insuficiente para aplicar la nota de crédito del producto: ' . $producto->prod_desc,
-                            'tipo' => 'error'
-                        ], 400);
-                    }
-
-                    $stock->stock_cant_exist -= $det->compra_cant;
+                    $stock->stock_cant_exist -= $mov['cantidad'];
                     $stock->motivo = 'NOTA DE CRÉDITO DE COMPRA';
                 } else {
-                    $stock->stock_cant_exist += $det->compra_cant;
+                    $stock->stock_cant_exist += $mov['cantidad'];
                     $stock->motivo = 'NOTA DE DÉBITO DE COMPRA';
                 }
 
                 $stock->fecha_movimiento = $nota->nota_comp_fec;
                 $stock->save();
             }
-
-            $monto_general = $monto_exentas + $monto_grav_5 + $monto_grav_10 + $monto_iva_5 + $monto_iva_10;
-
-            $proveedor = Proveedore::find($nota->proveedor_id);
-
-            if (!$proveedor) {
-                return response()->json([
-                    'mensaje' => 'Proveedor no encontrado.',
-                    'tipo' => 'error'
-                ], 400);
-            }
-
-            $primerProducto = DB::table('notas_comp_det as ncd')
-                ->join('productos as p', 'p.id', '=', 'ncd.producto_id')
-                ->join('tipo_impuestos as ti', 'ti.id', '=', 'p.impuesto_id')
-                ->where('ncd.nota_comp_id', $nota->id)
-                ->select('ti.id as impuesto_id', 'ti.impuesto_desc')
-                ->first();
 
             Libro_compras::create([
                 'compra_id' => $nota->compra_id,
@@ -389,26 +440,8 @@ class Notas_comp_cabController extends Controller
                 'proveedor_desc' => $proveedor->proveedor_desc
             ]);
 
-            if ((int)$compra->tipo_fact_id === 7) {
-                $cuentas = Ctas_pagar::where('compra_id', $nota->compra_id)->get();
-
-                if ($cuentas->isEmpty()) {
-                    return response()->json([
-                        'mensaje' => 'La compra es a crédito, pero no posee cuentas a pagar generadas.',
-                        'tipo' => 'error'
-                    ], 400);
-                }
-
+            if (!$cuentas->isEmpty()) {
                 if ($nota->nota_comp_tipo === 'NC') {
-                    $saldoTotal = $cuentas->sum('saldo');
-
-                    if ($saldoTotal < $monto_general) {
-                        return response()->json([
-                            'mensaje' => 'El monto de la nota de crédito supera el saldo pendiente de las cuentas a pagar.',
-                            'tipo' => 'error'
-                        ], 400);
-                    }
-
                     $saldoNota = $monto_general;
 
                     foreach ($cuentas as $cuenta) {
@@ -417,7 +450,18 @@ class Notas_comp_cabController extends Controller
                         }
 
                         $descuento = min($cuenta->saldo, $saldoNota);
+
+                        $cuenta->monto -= $descuento;
                         $cuenta->saldo -= $descuento;
+
+                        if ($cuenta->monto < 0) {
+                            $cuenta->monto = 0;
+                        }
+
+                        if ($cuenta->saldo < 0) {
+                            $cuenta->saldo = 0;
+                        }
+
                         $saldoNota -= $descuento;
                         $cuenta->save();
                     }
@@ -425,6 +469,7 @@ class Notas_comp_cabController extends Controller
                     $montoPorCuenta = $monto_general / $cuentas->count();
 
                     foreach ($cuentas as $cuenta) {
+                        $cuenta->monto += $montoPorCuenta;
                         $cuenta->saldo += $montoPorCuenta;
                         $cuenta->save();
                     }
