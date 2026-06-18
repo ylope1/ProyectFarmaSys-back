@@ -687,7 +687,207 @@ class Informes_comprasController extends Controller
         ], 200);
     }
 
-    
+    public function notasCompras(Request $request)
+    {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
+        $fechaDesde = $request->fecha_desde;
+        $fechaHasta = $request->fecha_hasta;
+        $estado = $request->estado;
+        $empresaId = $request->empresa_id;
+        $sucursalId = $request->sucursal_id;
+        $proveedorId = $request->proveedor_id;
+        $tipoNota = $request->tipo_nota;
+
+        $sql = "
+            SELECT 
+                ncc.id,
+                ncc.compra_id,
+                to_char(ncc.nota_comp_fec, 'DD/MM/YYYY HH24:MI:SS') AS nota_comp_fec,
+                ncc.nota_comp_estado,
+                ncc.nota_comp_tipo,
+                ncc.nota_comp_fact,
+                ncc.nota_comp_timbrado,
+                pr.proveedor_desc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                tf.tipo_fact_desc,
+                u.name AS encargado,
+                COUNT(ncd.producto_id) AS cantidad_items,
+                COALESCE(SUM(ncd.compra_cant), 0) AS total_cantidad,
+                COALESCE(SUM(ncd.compra_cant * ncd.compra_costo), 0) AS total_nota,
+                COALESCE(SUM(CASE WHEN p.impuesto_id = 3 THEN ncd.compra_cant * ncd.compra_costo ELSE 0 END), 0) AS total_exentas,
+                COALESCE(SUM(CASE WHEN p.impuesto_id = 2 THEN (ncd.compra_cant * ncd.compra_costo) / 1.05 ELSE 0 END), 0) AS total_grav_5,
+                COALESCE(SUM(CASE WHEN p.impuesto_id = 2 THEN (ncd.compra_cant * ncd.compra_costo) - ((ncd.compra_cant * ncd.compra_costo) / 1.05) ELSE 0 END), 0) AS total_iva_5,
+                COALESCE(SUM(CASE WHEN p.impuesto_id = 1 THEN (ncd.compra_cant * ncd.compra_costo) / 1.10 ELSE 0 END), 0) AS total_grav_10,
+                COALESCE(SUM(CASE WHEN p.impuesto_id = 1 THEN (ncd.compra_cant * ncd.compra_costo) - ((ncd.compra_cant * ncd.compra_costo) / 1.10) ELSE 0 END), 0) AS total_iva_10
+            FROM notas_comp_cab ncc
+            JOIN proveedores pr ON pr.id = ncc.proveedor_id
+            JOIN empresas e ON e.id = ncc.empresa_id
+            JOIN sucursales s ON s.id = ncc.sucursal_id
+            JOIN depositos d ON d.id = ncc.deposito_id
+            JOIN tipo_fact tf ON tf.id = ncc.tipo_fact_id
+            JOIN users u ON u.id = ncc.user_id
+            LEFT JOIN notas_comp_det ncd ON ncd.nota_comp_id = ncc.id
+            LEFT JOIN productos p ON p.id = ncd.producto_id
+            WHERE 1=1
+        ";
+
+        $parametros = [];
+
+        if ($fechaDesde && $fechaHasta) {
+            $sql .= " AND ncc.nota_comp_fec::date BETWEEN ? AND ? ";
+            $parametros[] = $fechaDesde;
+            $parametros[] = $fechaHasta;
+        }
+
+        if ($estado) {
+            $sql .= " AND ncc.nota_comp_estado = ? ";
+            $parametros[] = $estado;
+        }
+
+        if ($empresaId) {
+            $sql .= " AND ncc.empresa_id = ? ";
+            $parametros[] = $empresaId;
+        }
+
+        if ($sucursalId) {
+            $sql .= " AND ncc.sucursal_id = ? ";
+            $parametros[] = $sucursalId;
+        }
+
+        if ($proveedorId) {
+            $sql .= " AND ncc.proveedor_id = ? ";
+            $parametros[] = $proveedorId;
+        }
+
+        if ($tipoNota && $tipoNota !== 'TODOS') {
+            $sql .= " AND ncc.nota_comp_tipo = ? ";
+            $parametros[] = $tipoNota;
+        }
+
+        $sql .= "
+            GROUP BY 
+                ncc.id,
+                ncc.compra_id,
+                ncc.nota_comp_fec,
+                ncc.nota_comp_estado,
+                ncc.nota_comp_tipo,
+                ncc.nota_comp_fact,
+                ncc.nota_comp_timbrado,
+                pr.proveedor_desc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                tf.tipo_fact_desc,
+                u.name
+            ORDER BY ncc.id DESC
+        ";
+
+        $datos = DB::select($sql, $parametros);
+
+        return response()->json($datos, 200);
+    }
+
+    public function hojaNotaCompra($id)
+    {
+        $permiso = $this->verificarPermiso($this->rutaInforme, 'ver');
+        if ($permiso) {
+            return $permiso;
+        }
+
+        $cabecera = DB::select("
+            SELECT 
+                ncc.id,
+                ncc.compra_id,
+                to_char(ncc.nota_comp_fec, 'DD/MM/YYYY HH24:MI:SS') AS nota_comp_fec,
+                ncc.nota_comp_estado,
+                ncc.nota_comp_tipo,
+                ncc.nota_comp_fact,
+                ncc.nota_comp_timbrado,
+                pr.proveedor_desc,
+                pr.proveedor_ruc,
+                e.empresa_desc,
+                s.suc_desc,
+                d.deposito_desc,
+                tf.tipo_fact_desc,
+                u.name AS encargado,
+                cc.compra_fact,
+                cc.compra_timbrado,
+                to_char(cc.compra_fec, 'DD/MM/YYYY HH24:MI:SS') AS compra_fec,
+                cc.compra_estado
+            FROM notas_comp_cab ncc
+            JOIN compras_cab cc ON cc.id = ncc.compra_id
+            JOIN proveedores pr ON pr.id = ncc.proveedor_id
+            JOIN empresas e ON e.id = ncc.empresa_id
+            JOIN sucursales s ON s.id = ncc.sucursal_id
+            JOIN depositos d ON d.id = ncc.deposito_id
+            JOIN tipo_fact tf ON tf.id = ncc.tipo_fact_id
+            JOIN users u ON u.id = ncc.user_id
+            WHERE ncc.id = ?
+            LIMIT 1
+        ", [$id]);
+
+        if (empty($cabecera)) {
+            return response()->json([
+                'mensaje' => 'No se encontró la nota de compra con el número ingresado',
+                'tipo' => 'error'
+            ], 404);
+        }
+
+        $detalles = DB::select("
+            SELECT 
+                p.id AS producto_id,
+                p.prod_desc,
+                ncd.compra_cant,
+                ncd.compra_costo,
+                ncd.nota_comp_motivo,
+                ti.id AS impuesto_id,
+                ti.impuesto_desc,
+                (ncd.compra_cant * ncd.compra_costo) AS subtotal,
+                CASE 
+                    WHEN ti.id = 3 THEN (ncd.compra_cant * ncd.compra_costo)
+                    ELSE 0
+                END AS exentas,
+                CASE 
+                    WHEN ti.id = 2 THEN (ncd.compra_cant * ncd.compra_costo)
+                    ELSE 0
+                END AS grav_5,
+                CASE 
+                    WHEN ti.id = 2 THEN (ncd.compra_cant * ncd.compra_costo) - ((ncd.compra_cant * ncd.compra_costo) / 1.05)
+                    ELSE 0
+                END AS iva_5,
+                CASE 
+                    WHEN ti.id = 1 THEN (ncd.compra_cant * ncd.compra_costo)
+                    ELSE 0
+                END AS grav_10,
+                CASE 
+                    WHEN ti.id = 1 THEN (ncd.compra_cant * ncd.compra_costo) - ((ncd.compra_cant * ncd.compra_costo) / 1.10)
+                    ELSE 0
+                END AS iva_10
+            FROM notas_comp_det ncd
+            JOIN productos p ON p.id = ncd.producto_id
+            JOIN tipo_impuestos ti ON ti.id = p.impuesto_id
+            WHERE ncd.nota_comp_id = ?
+            ORDER BY p.prod_desc
+        ", [$id]);
+
+        if (empty($detalles)) {
+            return response()->json([
+                'mensaje' => 'La nota seleccionada no tiene productos cargados',
+                'tipo' => 'warning'
+            ], 404);
+        }
+
+        return response()->json([
+            'cabecera' => $cabecera[0],
+            'detalles' => $detalles
+        ], 200);
+    }
 }
 
 

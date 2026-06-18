@@ -374,7 +374,10 @@ class Notas_comp_cabController extends Controller
             ], 400);
         }
 
-        $cuentas = Ctas_pagar::where('compra_id', $nota->compra_id)->get();
+        $cuentas = Ctas_pagar::where('compra_id', $nota->compra_id)
+            ->where('saldo', '>', 0)
+            ->orderBy('nro_cuota', 'asc')
+            ->get();
 
         if ((int)$compra->tipo_fact_id === 7 && $cuentas->isEmpty()) {
             return response()->json([
